@@ -94,13 +94,9 @@ IST = pytz.timezone('Asia/Kolkata')
 def staff_entry(request):
     india_tz = pytz.timezone("Asia/Kolkata")
     now = timezone.now().astimezone(india_tz)
-    
-    photo_data = request.POST.get('photo_data')
-    if photo_data:
-        format, imgstr = photo_data.split(';base64,')
-        ext = format.split('/')[-1]
-        photo_file = ContentFile(base64.b64decode(imgstr), name=f"photo.{ext}")
+
     if request.method == 'POST':
+        entry_id = request.POST.get("entry_id")
         photo_file = None
         photo_data = request.POST.get('photo_data')
         if photo_data:
@@ -108,30 +104,47 @@ def staff_entry(request):
             ext = format.split('/')[-1]
             photo_file = ContentFile(base64.b64decode(imgstr), name=f"{random.randint(100000,999999)}.{ext}")
 
-        GameData.objects.create(
-            staff=request.user,
-            customer_id="cust-" + str(random.randint(10000, 99999)),
-            customer_name=request.POST['customer_name'],
-            machine_name=request.POST['machine_name'],
-            machine_number=request.POST['machine_number'],
-            in_points=request.POST['in_points'],
-            out_points=request.POST['out_points'],
-            good_luck=request.POST.get('amount') or 0,
-            expense_type=request.POST['expense_type'],
-            bill_no=generate_bill_no(),
-            photo=photo_file,  
-            remarks=request.POST['remarks'],
-            date=now.date(),
-            time=now.time(),
-        )
+        if entry_id:
+            # Editing existing record
+            entry = GameData.objects.get(pk=entry_id)
+            entry.customer_name = request.POST['customer_name']
+            entry.machine_name = request.POST['machine_name']
+            entry.machine_number = request.POST['machine_number']
+            entry.in_points = request.POST['in_points']
+            entry.out_points = request.POST['out_points']
+            entry.good_luck = request.POST.get('amount') or 0
+            entry.expense_type = request.POST['expense_type']
+            entry.remarks = request.POST['remarks']
+            entry.date = now.date()
+            entry.time = now.time()
+            if photo_file:
+                entry.photo = photo_file
+            entry.save()
+        else:
+            # Creating new record
+            entry = GameData.objects.create(
+                staff=request.user,
+                customer_id="cust-" + str(random.randint(10000, 99999)),
+                customer_name=request.POST['customer_name'],
+                machine_name=request.POST['machine_name'],
+                machine_number=request.POST['machine_number'],
+                in_points=request.POST['in_points'],
+                out_points=request.POST['out_points'],
+                good_luck=request.POST.get('amount') or 0,
+                expense_type=request.POST['expense_type'],
+                bill_no=generate_bill_no(),
+                photo=photo_file,
+                remarks=request.POST['remarks'],
+                date=now.date(),
+                time=now.time(),
+            )
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'id': entry.id})
 
-        # fallback (not used with AJAX)
         messages.success(request, "✅ Data saved successfully!")
         return redirect('staff_entry')
-    
+
     context = {
         'now': now,
         'customer_id': "cust-" + str(random.randint(10000, 99999)),

@@ -1,19 +1,9 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Game Store Data Entry</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block page_title %}Staff entires{% endblock %}
+{% block content %}
 
-  <!-- Bootstrap 5 CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background: #e3f2fd;
-      padding: 10px;
-      font-family: "Segoe UI", sans-serif;
-    }
     .container-box {
       display: flex;
       flex-wrap: wrap;
@@ -50,7 +40,6 @@
 </head>
 <body>
 <div id="statusMessage" style="display:none; font-weight:bold;"></div>
-
 <div class="container container-box">
   <!-- Left Form -->
   <div class="form-wrapper">
@@ -58,9 +47,9 @@
     <div class="text-center mb-4">
       <strong>🧾 Bill No:</strong> {{ bill_no }}
     </div>
-
     <form method="POST" id="entryForm" enctype="multipart/form-data">
       {% csrf_token %}
+      <input type="hidden" name="entry_id" id="entry_id">
       <div class="row">
         <div class="col-md-3 mb-3">
           <label class="form-label">Staff ID</label>
@@ -79,12 +68,10 @@
           <input type="text" class="form-control readonly-field" value="{{ now|time:'H:i:s' }}" readonly>
         </div>
       </div>
-
       <div class="mb-3">
         <label class="form-label">Customer Name</label>
         <input type="text" class="form-control" name="customer_name" required>
       </div>
-
       <div class="row">
         <div class="col-md-3 mb-3">
           <label class="form-label">Machine Name</label>
@@ -103,7 +90,6 @@
           <input type="number" class="form-control" name="out_points" min="0" required>
         </div>
       </div>
-
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Expense Type</label>
@@ -118,18 +104,15 @@
             <option value="other">Other</option>
           </select>
         </div>
-
         <div class="col-md-6 mb-3">
           <label class="form-label">Amount</label>
           <input type="number" class="form-control" name="amount" id="amount" min="0" required>
         </div>
       </div>
-
       <div class="mb-3" id="remarks_group" style="display: none;">
         <label class="form-label">Remarks</label>
         <textarea class="form-control" name="remarks" id="remarks" rows="3"></textarea>
       </div>
-
       <div class="mb-3">
         <label class="form-label">Take Photo (Camera)</label>
         <div>
@@ -140,11 +123,11 @@
         </div>
       </div>
       <div class="text-center">
-      <button type="submit" class="btn btn-primary px-4">💾 Save Data</button>
-    </div>
+        <button type="submit" id="saveBtn" class="btn btn-primary px-4">💾 Save Data</button>
+        <button type="button" id="enableEditBtn" class="btn btn-warning px-4" style="display: none;">✏️ Edit</button>
+      </div>
     </form>
   </div>
-
   <!-- Right Panel -->
   <div class="preview-wrapper" id="printable_area">
     <h5 class="text-center mb-3">📊 Live Preview</h5>
@@ -160,19 +143,15 @@
     <div class="mb-2"><strong>Expense Type:</strong> <span id="prev_expense_type">-</span></div>
     <div class="mb-2"><strong>Amount:</strong> <span id="prev_good_luck">-</span></div>
     <div class="mb-2"><strong>Remarks:</strong> <span id="prev_remarks">-</span></div>
-
     <!-- Live photo preview -->
     <div class="mb-2"><strong>Captured Photo:</strong></div>
     <img id="preview_img" src="" style="max-width: 100%; border: 1px solid #ccc; border-radius: 5px;" alt="No photo yet">
-    
     <div class="text-center mt-3">
       <button id="printBtn" class="btn btn-secondary px-4" style="display: none;">🖨️ Print Data</button>
     </div>
   </div>
 </div>
-
 <script>
-  // Camera access and snapshot logic
   const video = document.getElementById('camera');
   const canvas = document.getElementById('snapshot');
   const photoInput = document.getElementById('photo_data');
@@ -187,7 +166,6 @@
         alert("Camera not accessible.");
       });
   }
-
   function takeSnapshot() {
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
@@ -199,10 +177,8 @@
     if (previewImg) {
       previewImg.src = dataURL;
     }
-
     alert("Photo captured!");
   }
-
   // Generic function to update text preview in real-time
   const updatePreview = (selector, target) => {
     const input = document.querySelector(selector);
@@ -220,10 +196,9 @@
   updatePreview('[name="machine_number"]', '#prev_machine_number');
   updatePreview('[name="in_points"]', '#prev_in_points');
   updatePreview('[name="out_points"]', '#prev_out_points');
-  updatePreview('[name="amount"]', '#prev_good_luck'); // Reused for amount
+  updatePreview('[name="amount"]', '#prev_good_luck');
   updatePreview('[name="remarks"]', '#prev_remarks');
 
-  // Handle dropdown change for expense type and remarks visibility
   const expenseSelect = document.querySelector('[name="expense_type"]');
   const expensePreview = document.getElementById('prev_expense_type');
   const remarksGroup = document.getElementById('remarks_group');
@@ -232,8 +207,6 @@
     expenseSelect.addEventListener('change', function () {
       const selected = this.value || '-';
       if (expensePreview) expensePreview.innerText = selected;
-
-      // Show remarks only if "Other" is selected
       remarksGroup.style.display = selected === 'other' ? 'block' : 'none';
     });
   }
@@ -242,12 +215,14 @@
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('entryForm');
   const printBtn = document.getElementById('printBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const enableEditBtn = document.getElementById('enableEditBtn');
   const msgBox = document.getElementById('statusMessage');
 
   if (!form) return;
 
   form.addEventListener('submit', async function (e) {
-    e.preventDefault(); // prevent form reload
+    e.preventDefault();
 
     if (!confirm("Are you sure you want to save this data?")) return;
 
@@ -260,21 +235,33 @@ document.addEventListener('DOMContentLoaded', function () {
         body: formData
       });
 
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const result = await response.json();
 
       if (result.success) {
-        // ✅ Show message
         msgBox.innerText = "✅ Data saved successfully!";
         msgBox.style.color = "green";
         msgBox.style.display = "block";
 
-        // ✅ Show print button
-        printBtn.style.display = 'inline-block';
+        document.getElementById('entry_id').value = result.id;
 
-        // ✅ Hide message after 5s
+        printBtn.style.display = 'inline-block';
+        saveBtn.style.display = 'none';
+        enableEditBtn.style.display = 'inline-block';
+
+        form.querySelectorAll('input, select, textarea').forEach(f => {
+          if (!f.classList.contains('readonly-field')) {
+            f.setAttribute('readonly', true);
+            f.setAttribute('disabled', true);
+          }
+        });
+
         setTimeout(() => {
           msgBox.style.display = 'none';
         }, 5000);
+      } else {
+        throw new Error("Server returned success=false");
       }
     } catch (err) {
       console.error(err);
@@ -282,25 +269,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  if (enableEditBtn) {
+    enableEditBtn.addEventListener('click', function () {
+      form.querySelectorAll('input, select, textarea').forEach(f => {
+        if (!f.classList.contains('readonly-field')) {
+          f.removeAttribute('readonly');
+          f.removeAttribute('disabled');
+        }
+      });
+      saveBtn.style.display = 'inline-block';
+      this.style.display = 'none';
+      msgBox.innerText = "✏️ Edit mode enabled!";
+      msgBox.style.color = "orange";
+      msgBox.style.display = "block";
+      setTimeout(() => {
+        msgBox.style.display = 'none';
+      }, 3000);
+    });
+  }
+
   if (printBtn) {
     printBtn.addEventListener('click', function () {
       const printContents = document.getElementById('printable_area').innerHTML;
-      const originalContents = document.body.innerHTML;
 
-      document.body.innerHTML = `
-        <html><head><title>Print Preview</title>
-          <style>
-            body { font-family: Arial; margin: 20px; }
-            .mb-2 { margin-bottom: 10px; }
-          </style>
-        </head><body>${printContents}</body></html>
-      `;
-      window.print();
-      document.body.innerHTML = originalContents;
-      window.location.reload(); // Optional if you want to clear data after print
+      const newWin = window.open('', '', 'width=800,height=600');
+      newWin.document.write(`
+        <html>
+          <head>
+            <title>Print Preview</title>
+            <style>
+              body { font-family: Arial; margin: 20px; }
+              .mb-2 { margin-bottom: 10px; }
+            </style>
+          </head>
+          <body>${printContents}</body>
+        </html>
+      `);
+      newWin.document.close();
+      newWin.focus();
+      newWin.print();
+      newWin.close();
     });
   }
+
 });
+
 </script>
-</body>
-</html>
+{% endblock %}

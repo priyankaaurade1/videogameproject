@@ -1,18 +1,19 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-  <title>All Game Entries</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-  <div class="container mt-4">
-    <h2 class="mb-3">All Game Entries</h2>
-    <div class="text-center mt-4">
-        <form method="get" action="{% url 'export_report' %}">
-            <button type="submit" class="btn btn-success">📥 Download Report (Excel)</button>
-        </form>
-    </div>
+
+{% block page_title %}All Entries{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">All Game Entries</h2>
+
+  <div class="text-center mt-4 mb-3">
+    <form method="get" action="{% url 'export_report' %}">
+      <button type="submit" class="btn btn-success">📥 Download Report (Excel)</button>
+    </form>
+  </div>
+
+  <div id="printableArea">
     <table class="table table-bordered table-striped">
       <thead class="table-dark">
         <tr>
@@ -28,11 +29,12 @@
           <th>Date</th>
           <th>Time</th>
           <th>Photo</th>
+          <th>Print</th>
         </tr>
       </thead>
       <tbody>
         {% for entry in entries %}
-        <tr>
+        <tr id="entryRow-{{ entry.id }}">
           <td>{{ forloop.counter }}</td>
           <td>{{ entry.staff.username }}</td>
           <td>{{ entry.customer_name }}</td>
@@ -46,15 +48,80 @@
           <td>{{ entry.time }}</td>
           <td>
             {% if entry.photo %}
-            <img src="{{ entry.photo.url }}" width="200">
+              <img src="{{ entry.photo.url }}" width="80">
             {% else %}
-            <p>No photo</p>
+              <p>No photo</p>
             {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-secondary printBtn" data-entry-id="{{ entry.id }}">🖨️</button>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-</body>
-</html>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const printButtons = document.querySelectorAll('.printBtn');
+
+    printButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const entryId = this.getAttribute('data-entry-id');
+        const row = document.getElementById(`entryRow-${entryId}`);
+        const clonedRow = row.cloneNode(true);
+
+        // Remove photo and print cells (indexes 11 and 12)
+        clonedRow.removeChild(clonedRow.children[12]); // Print button
+        clonedRow.removeChild(clonedRow.children[11]); // Photo
+
+        const newWindow = window.open('', '', 'height=600,width=800');
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Print Entry</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 13px; }
+                th { background-color: #f2f2f2; }
+              </style>
+            </head>
+            <body>
+              <h3 style="text-align:center; margin-bottom: 20px;">Game Entry Report</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Staff</th>
+                    <th>Customer</th>
+                    <th>Machine</th>
+                    <th>In</th>
+                    <th>Out</th>
+                    <th>Expense</th>
+                    <th>Amount</th>
+                    <th>Bill No</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${clonedRow.innerHTML}
+                </tbody>
+              </table>
+            </body>
+          </html>
+        `);
+
+        newWindow.document.close();
+        newWindow.focus();
+        newWindow.print();
+        newWindow.close();
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+
