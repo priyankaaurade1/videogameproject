@@ -1,7 +1,6 @@
-# views.py
 from django.utils import timezone
 from django.shortcuts import render, redirect
-from .models import GameData
+from .models import *
 import openpyxl
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -14,20 +13,97 @@ from openpyxl.drawing.image import Image as ExcelImage
 import os
 from django.urls import reverse
 from django.http import JsonResponse
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import user_passes_test
 
 def custom_login(request):
+    if request.user.is_authenticated:
+        # Already logged in, redirect based on role
+        if request.user.role == 'superadmin':
+            return redirect('superadmin_dashboard')
+        elif request.user.role == 'staff':
+            return redirect('staff_entry')
+
     if request.method == 'POST':
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if not username or not password:
+            messages.error(request, "Please enter both username and password.")
+            return render(request, 'login.html')
+
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            return redirect(staff_entry) 
+            if user.role == 'superadmin':
+                return redirect('superadmin_dashboard')
+            elif user.role == 'staff':
+                if user.store is None:
+                    messages.error(request, "You are not assigned to any store. Contact admin.")
+                    return redirect('custom_login')
+                return redirect('staff_entry')
+            else:
+                messages.error(request, "Invalid user role.")
         else:
             messages.error(request, "Invalid username or password.")
 
     return render(request, 'login.html')
+
+def is_superadmin(user):
+    return user.is_authenticated and user.is_superuser
+
+@user_passes_test(is_superadmin, login_url='/forbidden/')
+def superadmin_dashboard(request):
+    if request.user.role != 'superadmin':
+        messages.error(request, "Unauthorized access.")
+        return redirect('custom_login')
+
+    if request.method == 'POST':
+        if 'new_store' in request.POST:
+            # Handle Store creation
+            name = request.POST.get('store_name')
+            location = request.POST.get('store_location')
+            if name:
+                Store.objects.create(name=name, location=location)
+                messages.success(request, "✅ New store added successfully!")
+            else:
+                messages.error(request, "⚠️ Store name is required.")
+
+        if 'new_staff' in request.POST:
+            # Handle Staff creation
+            username = request.POST.get('staff_username')
+            email = request.POST.get('staff_email')
+            password = request.POST.get('staff_password')
+            store_id = request.POST.get('staff_store')
+
+            if username and password:
+                try:
+                    store = Store.objects.get(id=store_id) if store_id else None
+                    User.objects.create_user(
+                        username=username,
+                        email=email,
+                        password=password,
+                        role='staff',
+                        store=store
+                    )
+                    messages.success(request, "✅ New staff user added successfully!")
+                except Store.DoesNotExist:
+                    messages.error(request, "⚠️ Selected store does not exist.")
+            else:
+                messages.error(request, "⚠️ Username and password are required for staff.")
+
+    stores = Store.objects.all()
+    staff_users = User.objects.filter(role='staff')
+    return render(request, 'superadmin_dashboard.html', {
+        'stores': stores,
+        'staff_users': staff_users,
+    })
+
+
+def custom_logout(request):
+    logout(request)
+    return redirect('custom_login')
 
 def generate_bill_no():
     india_tz = pytz.timezone("Asia/Kolkata")
@@ -92,8 +168,14 @@ from django.core.files.base import ContentFile
 IST = pytz.timezone('Asia/Kolkata')
 @login_required
 def staff_entry(request):
-    india_tz = pytz.timezone("Asia/Kolkata")
-    now = timezone.now().astimezone(india_tz)
+    if request.user.role != 'staff':
+        messages.error(request, "Unauthorized access.")
+        return redirect('custom_login')
+
+    if not request.user.store:
+        messages.error(request, "You are not assigned to any store.")
+        return redirect('custom_login')
+    now = timezone.now()
 
     if request.method == 'POST':
         entry_id = request.POST.get("entry_id")
@@ -154,6 +236,9 @@ def staff_entry(request):
 
 @login_required
 def all_entries(request):
+    if request.user.role != 'staff':
+        messages.error(request, "Unauthorized access.")
+        return redirect('custom_login')
     entries = GameData.objects.order_by('-id')[:100]  
     return render(request, 'entries_list.html', {'entries': entries})
 

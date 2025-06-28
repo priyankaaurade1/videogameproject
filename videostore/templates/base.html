@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Staff Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
     body {
       display: flex;
@@ -41,6 +43,7 @@
 
     .sidebar ul.nav li {
       padding: 15px 20px;
+      width: 100%;
     }
 
     .sidebar ul.nav li a {
@@ -76,38 +79,56 @@
       width: 100%;
     }
 
-    .sidebar.collapsed .nav-text {
-      display: none;
-    }
+    .sidebar.collapsed .username-text,
+.sidebar.collapsed .logout-icon,
+.sidebar.collapsed .store-info,
+.sidebar.collapsed .nav-text {
+  display: none !important;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="sidebar-header">
-      <span class="nav-text">{{ request.user.username }}</span>
+<div class="sidebar" id="sidebar">
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+  <!-- User Profile + Logout -->
+  <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
+    <div class="d-flex align-items-center username-text">
+      <i class="bi bi-person-circle me-2 fs-5"></i>
+      <span >{{ request.user.username }}</span>
     </div>
-    <ul class="nav">
-      <li><a href="{% url 'staff_entry' %}"><span class="nav-text">📝 Staff Entry</span></a></li>
-      <li><a href="{% url 'all_entries' %}"><span class="nav-text">📄 Show Entries</span></a></li>
-      <li><a href="{% url 'logout' %}"><span class="nav-text">🚪 Logout</span></a></li>
-    </ul>
+    <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
+      <i class="bi bi-box-arrow-right fs-5"></i>
+    </a>
   </div>
 
-  <!-- Main Content -->
-  <div class="content">
-    <!-- Breadcrumb -->
-    <div class="breadcrumb-wrapper">
-      {% block breadcrumb %}
-        <nav>
-          <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'staff_entry' %}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{% block page_title %}Staff Entry{% endblock %}</li>
-          </ol>
-        </nav>
-      {% endblock %}
-    </div>
+  <!-- Store Info -->
+  <div class="sidebar-header small text-center store-info">
+    {% if request.user.store %}
+      🏬 {{ request.user.store.name }}
+    {% else %}
+      No Store Assigned
+    {% endif %}
+  </div>
+
+  <!-- Navigation -->
+  <ul class="nav">
+    <li><a href="{% url 'staff_entry' %}"><span class="nav-text">📝 Staff Entry</span></a></li>
+    <li><a href="{% url 'all_entries' %}"><span class="nav-text">📄 Show Entries</span></a></li>
+    {% if request.user.is_superuser %}
+    <li><a href="{% url 'superadmin_dashboard' %}"><span class="nav-text">🛠️ Superadmin Dashboard</span></a></li>
+  {% endif %}
+  </ul>
+</div>
 
     {% block content %}{% endblock %}
   </div>

@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.urls import path
 from . import views
 from django.contrib.auth.views import LogoutView
@@ -8,9 +9,11 @@ urlpatterns = [
     path('', views.staff_entry, name='staff_entry'),  
     path('export-report/', views.export_report, name='export_report'),
     path('all_entries', views.all_entries, name='all_entries'),
-
+    path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('login/', views.custom_login, name='custom_login'),
-    path('logout/', LogoutView.as_view(next_page='custom_login'), name='logout'),
+    path('logout/', views.custom_logout, name='custom_logout'),
+    path('forbidden/', lambda request: render(request, 'forbidden.html'), name='forbidden'),
+
 ] 
 
 if settings.DEBUG:
