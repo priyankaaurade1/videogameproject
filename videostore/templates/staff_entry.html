@@ -292,8 +292,8 @@ document.addEventListener('DOMContentLoaded', function () {
     printBtn.addEventListener('click', function () {
       const printContents = document.getElementById('printable_area').innerHTML;
 
-      const newWin = window.open('', '', 'width=800,height=600');
-      newWin.document.write(`
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(`
         <html>
           <head>
             <title>Print Preview</title>
@@ -305,13 +305,25 @@ document.addEventListener('DOMContentLoaded', function () {
           <body>${printContents}</body>
         </html>
       `);
-      newWin.document.close();
-      newWin.focus();
-      newWin.print();
-      newWin.close();
+      printWindow.document.close();
+      printWindow.focus();
+
+      // Wait for print to complete (or cancel)
+      printWindow.addEventListener('afterprint', function () {
+        printWindow.close();
+        location.reload();
+      });
+
+      // Trigger print
+      printWindow.print();
+
+      // Fallback in case afterprint not supported
+      printWindow.onafterprint = function () {
+        printWindow.close();
+        location.reload();
+      };
     });
   }
-
 });
 
 </script>
