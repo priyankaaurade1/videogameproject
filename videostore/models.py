@@ -46,3 +46,9 @@ class GameData(models.Model):
     bill_no = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='uploads/', null=True, blank=True)
     remarks = models.TextField(blank=True)
+    entry_source = models.CharField(
+        max_length=30,
+        choices=[('customer_staff_entry', 'Customer Entry'), ('staff_entry', 'Staff Entry')],
+        default='customer_staff_entry'
+    )
+

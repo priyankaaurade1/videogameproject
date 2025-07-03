@@ -168,7 +168,13 @@
   </li>
 
   <!-- Other main items -->
-  <li><a href="{% url 'all_entries' %}">📄 Show Entries</a></li>
+   <li class="has-submenu">
+    <a href="#">➕ View Entries ▾</a>
+    <ul class="submenu">
+      <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
+      <li><a href="{% url 'customer_entries' %}">📝All  Customer Entry</a></li>
+    </ul>
+  </li>
 
   {% if request.user.is_superuser %}
     <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
