@@ -15,15 +15,14 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import user_passes_test
+import base64
+from django.core.files.base import ContentFile
+IST = pytz.timezone('Asia/Kolkata')
 
 def custom_login(request):
     if request.user.is_authenticated:
-        # Already logged in, redirect based on role
-        if request.user.role == 'superadmin':
-            return redirect('superadmin_dashboard')
-        elif request.user.role == 'staff':
-            return redirect('staff_entry')
-
+        if request.user.role in ['superadmin', 'staff']:
+            return redirect('customer_staff_entry')
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -36,18 +35,15 @@ def custom_login(request):
 
         if user is not None:
             login(request, user)
-            if user.role == 'superadmin':
-                return redirect('superadmin_dashboard')
-            elif user.role == 'staff':
-                if user.store is None:
+            if user.role in ['superadmin', 'staff']:
+                if user.role == 'staff' and user.store is None:
                     messages.error(request, "You are not assigned to any store. Contact admin.")
                     return redirect('custom_login')
-                return redirect('staff_entry')
+                return redirect('customer_staff_entry')
             else:
                 messages.error(request, "Invalid user role.")
         else:
             messages.error(request, "Invalid username or password.")
-
     return render(request, 'login.html')
 
 def is_superadmin(user):
@@ -61,7 +57,6 @@ def superadmin_dashboard(request):
 
     if request.method == 'POST':
         if 'new_store' in request.POST:
-            # Handle Store creation
             name = request.POST.get('store_name')
             location = request.POST.get('store_location')
             if name:
@@ -69,14 +64,32 @@ def superadmin_dashboard(request):
                 messages.success(request, "✅ New store added successfully!")
             else:
                 messages.error(request, "⚠️ Store name is required.")
+        
+        if 'new_machine' in request.POST:
+            name = request.POST.get('name')
+            number = request.POST.get('number')
+            store_id = request.POST.get('store_id')
+
+            if name and number and store_id:
+                try:
+                    store = Store.objects.get(id=store_id)
+                    Machine.objects.create(
+                        name=name,
+                        number=number,
+                        store=store
+                    )
+                    messages.success(request, "✅ New machine added successfully!")
+                except Store.DoesNotExist:
+                    messages.error(request, "⚠️ Selected store does not exist.")
+            else:
+                messages.error(request, "⚠️ Machine name, number, and store are required.")
 
         if 'new_staff' in request.POST:
-            # Handle Staff creation
             username = request.POST.get('staff_username')
             email = request.POST.get('staff_email')
             password = request.POST.get('staff_password')
             store_id = request.POST.get('staff_store')
-
+            phone_number = request.POST.get('staff_phone')
             if username and password:
                 try:
                     store = Store.objects.get(id=store_id) if store_id else None
@@ -85,21 +98,98 @@ def superadmin_dashboard(request):
                         email=email,
                         password=password,
                         role='staff',
-                        store=store
+                        store=store,
+                        phone_number=phone_number,
                     )
                     messages.success(request, "✅ New staff user added successfully!")
+                    request.session['clear_local_storage'] = True
                 except Store.DoesNotExist:
                     messages.error(request, "⚠️ Selected store does not exist.")
             else:
                 messages.error(request, "⚠️ Username and password are required for staff.")
 
+        if 'edit_store' in request.POST:
+            store_id = request.POST.get('store_id')
+            name = request.POST.get('store_name')
+            location = request.POST.get('store_location')
+            try:
+                store = Store.objects.get(id=store_id)
+                store.name = name
+                store.location = location
+                store.save()
+                messages.success(request, "✅ Store updated successfully!")
+            except Store.DoesNotExist:
+                messages.error(request, "⚠️ Store not found.")
+
+        if 'edit_machine' in request.POST:
+            machine_id = request.POST.get('machine_id')
+            name = request.POST.get('name')
+            number = request.POST.get('number')
+            store_id = request.POST.get('store_id')
+            try:
+                machine = Machine.objects.get(id=machine_id)
+                store = Store.objects.get(id=store_id)
+                machine.name = name
+                machine.number = number
+                machine.store = store
+                machine.save()
+                messages.success(request, "✅ Machine updated successfully!")
+            except (Machine.DoesNotExist, Store.DoesNotExist):
+                messages.error(request, "⚠️ Machine or Store not found.")
+
+        if 'edit_staff' in request.POST:
+            staff_id = request.POST.get('staff_id')
+            username = request.POST.get('staff_username')
+            email = request.POST.get('staff_email')
+            store_id = request.POST.get('staff_store')
+            phone_number = request.POST.get('staff_phone')
+            try:
+                staff = User.objects.get(id=staff_id)
+                staff.username = username
+                staff.email = email
+                staff.phone_number = phone_number
+                staff.store = Store.objects.get(id=store_id) if store_id else None
+                staff.save()
+                messages.success(request, "✅ Staff updated successfully!")
+            except (User.DoesNotExist, Store.DoesNotExist):
+                messages.error(request, "⚠️ Staff or Store not found.")
+
+        if 'delete_store' in request.POST:
+            store_id = request.POST.get('store_id')
+            try:
+                store = Store.objects.get(id=store_id)
+                store.delete()
+                messages.success(request, "✅ Store deleted successfully!")
+            except Store.DoesNotExist:
+                messages.error(request, "⚠️ Store does not exist.")
+        if 'delete_machine' in request.POST:
+            machine_id = request.POST.get('machine_id')
+            try:
+                machine = Machine.objects.get(id=machine_id)
+                machine.delete()
+                messages.success(request, "✅ Machine deleted successfully!")
+            except Machine.DoesNotExist:
+                messages.error(request, "⚠️ Machine does not exist.")
+        if 'delete_staff' in request.POST:
+            staff_id = request.POST.get('staff_id')
+            try:
+                staff = User.objects.get(id=staff_id, role='staff')
+                staff.delete()
+                messages.success(request, "✅ Staff user deleted successfully!")
+            except User.DoesNotExist:
+                messages.error(request, "⚠️ Staff user does not exist.")
+
     stores = Store.objects.all()
     staff_users = User.objects.filter(role='staff')
-    return render(request, 'superadmin_dashboard.html', {
+    machines = Machine.objects.select_related('store').all()
+    response = render(request, 'superadmin_dashboard.html', {
         'stores': stores,
         'staff_users': staff_users,
+        'machines': machines,
     })
-
+    if request.session.get('clear_local_storage'):
+        del request.session['clear_local_storage']
+    return response
 
 def custom_logout(request):
     logout(request)
@@ -163,17 +253,94 @@ def export_report(request):
     workbook.save(response)
     return response
 
-import base64
-from django.core.files.base import ContentFile
-IST = pytz.timezone('Asia/Kolkata')
 @login_required
 def staff_entry(request):
-    if request.user.role != 'staff':
+    if request.user.role == 'staff':
+        if not request.user.store:
+            messages.error(request, "You are not assigned to any store.")
+            return redirect('custom_login')
+        stores = Store.objects.filter(pk=request.user.store.pk)
+
+    elif request.user.is_superuser or request.user.role == 'superadmin':
+        stores = Store.objects.all()
+
+    else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
+    now = timezone.now()
 
-    if not request.user.store:
-        messages.error(request, "You are not assigned to any store.")
+    if request.method == 'POST':
+        entry_id = request.POST.get("entry_id")
+        machine_id = request.POST.get('machine')
+        photo_file = None
+        photo_data = request.POST.get('photo_data')
+        if photo_data:
+            format, imgstr = photo_data.split(';base64,')
+            ext = format.split('/')[-1]
+            photo_file = ContentFile(base64.b64decode(imgstr), name=f"{random.randint(100000,999999)}.{ext}")
+
+        if entry_id:
+            # Editing existing record
+            entry = GameData.objects.get(pk=entry_id)
+            entry.customer_name = request.POST['customer_name']
+            entry.machine = Machine.objects.get(pk=machine_id) if machine_id else None
+            entry.in_points = request.POST['in_points']
+            entry.out_points = request.POST['out_points']
+            entry.good_luck = request.POST.get('good_luck') or 0
+            entry.expense_type = request.POST['expense_type']
+            entry.expense_amt = request.POST.get('expense_amt') or 0
+            entry.remarks = request.POST['remarks']
+            entry.date = now.date()
+            entry.time = now.time()
+            if photo_file:
+                entry.photo = photo_file
+            entry.save()
+        else:
+            # Creating new record
+            entry = GameData.objects.create(
+                staff=request.user,
+                customer_id="cust-" + str(random.randint(10000, 99999)),
+                customer_name=request.POST['customer_name'],
+                machine=Machine.objects.get(pk=request.POST['machine']) if request.POST.get('machine') else None,
+                in_points=request.POST['in_points'],
+                out_points=request.POST['out_points'],
+                good_luck=request.POST.get('good_luck') or 0,
+                expense_type=request.POST['expense_type'],
+                expense_amt=request.POST.get('expense_amt') or 0,
+                bill_no=generate_bill_no(),
+                photo=photo_file,
+                remarks=request.POST['remarks'],
+                date=now.date(),
+                time=now.time(),
+            )
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'id': entry.id})
+
+        messages.success(request, "✅ Data saved successfully!")
+        return redirect('staff_entry')
+
+    context = {
+        'now': now,
+        'customer_id': "cust-" + str(random.randint(10000, 99999)),
+        'bill_no': generate_bill_no(),
+        'stores':stores,
+    }
+    return render(request, 'staff_entry.html', context)
+
+@login_required
+def customer_staff_entry(request):
+    if request.user.role == 'staff':
+        if not request.user.store:
+            messages.error(request, "You are not assigned to any store.")
+            return redirect('custom_login')
+        stores = Store.objects.filter(pk=request.user.store.pk)
+
+    elif request.user.is_superuser or request.user.role == 'superadmin':
+        stores = Store.objects.all()
+
+    else:
+        messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
     now = timezone.now()
 
@@ -225,14 +392,15 @@ def staff_entry(request):
             return JsonResponse({'success': True, 'id': entry.id})
 
         messages.success(request, "✅ Data saved successfully!")
-        return redirect('staff_entry')
+        return redirect('customer_staff_entry')
 
     context = {
         'now': now,
         'customer_id': "cust-" + str(random.randint(10000, 99999)),
         'bill_no': generate_bill_no(),
+        'stores':stores,
     }
-    return render(request, 'staff_entry.html', context)
+    return render(request, 'customer_staff_entry.html', context)
 
 @login_required
 def all_entries(request):

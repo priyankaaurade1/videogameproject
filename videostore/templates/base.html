@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
     body {
       display: flex;
@@ -91,9 +91,48 @@
   padding-left: 0;
   padding-right: 0;
 }
-
-
   </style>
+<style>
+.nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav li {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 16px;
+}
+
+.nav a:hover {
+  text-decoration: underline;
+}
+
+.submenu {
+  display: none;
+  list-style: none;
+  padding-left: 16px;
+  margin: 0;
+}
+
+.has-submenu:hover .submenu {
+  display: block;
+}
+
+.submenu a {
+  font-size: 14px;
+  padding: 2px 8px;
+}
+</style>
 </head>
 <body>
   <!-- Sidebar -->
@@ -115,19 +154,26 @@
   <div class="sidebar-header small text-center store-info">
     {% if request.user.store %}
       🏬 {{ request.user.store.name }}
-    {% else %}
-      No Store Assigned
     {% endif %}
   </div>
 
-  <!-- Navigation -->
-  <ul class="nav">
-    <li><a href="{% url 'staff_entry' %}"><span class="nav-text">📝 Staff Entry</span></a></li>
-    <li><a href="{% url 'all_entries' %}"><span class="nav-text">📄 Show Entries</span></a></li>
-    {% if request.user.is_superuser %}
-    <li><a href="{% url 'superadmin_dashboard' %}"><span class="nav-text">🛠️ Superadmin Dashboard</span></a></li>
+<ul class="nav nav-text">
+  <!-- Add Entries with submenu -->
+  <li class="has-submenu">
+    <a href="#">➕ Add Entries ▾</a>
+    <ul class="submenu">
+      <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
+      <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
+    </ul>
+  </li>
+
+  <!-- Other main items -->
+  <li><a href="{% url 'all_entries' %}">📄 Show Entries</a></li>
+
+  {% if request.user.is_superuser %}
+    <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
   {% endif %}
-  </ul>
+</ul>
 </div>
 
     {% block content %}{% endblock %}

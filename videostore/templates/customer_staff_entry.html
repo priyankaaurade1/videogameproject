@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block page_title %}Staff entires{% endblock %}
+<title>Customer Entires</title>
 {% block content %}
 
   <style>
@@ -37,11 +37,12 @@
       }
     }
   </style>
-<div id="statusMessage" style="display:none; font-weight:bold;"></div>
+
 <div class="container container-box">
+<div id="statusMessage" style="display:none; font-weight:bold;"></div>
   <!-- Left Form -->
   <div class="form-wrapper">
-    <h3 class="text-center mb-3">🎮 Game Store - Staff Entry</h3>
+    <h3 class="text-center mb-3">🎮 Game Store - Customer Entry</h3>
     <div class="text-center mb-4">
       <strong>🧾 Bill No:</strong> {{ bill_no }}
     </div>
@@ -71,14 +72,13 @@
         <input type="text" class="form-control" name="customer_name" required>
       </div>
       <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Select Machine</label>
-          <select class="form-select" name="machine" required>
-            <option value="">-- Select Machine --</option>
-            {% for machine in machines %}
-              <option value="{{ machine.id }}">{{ machine.name }} ({{ machine.number }})</option>
-            {% endfor %}
-          </select>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Machine Name</label>
+          <input type="text" class="form-control" name="machine_name" required>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Machine Number</label>
+          <input type="number" class="form-control" name="machine_number" required>
         </div>
         <div class="col-md-3 mb-3">
           <label class="form-label">In Points</label>
@@ -104,19 +104,15 @@
           </select>
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Expense Amount</label>
-          <input type="number" class="form-control" name="expense_amt" id="expense_amt" min="0" required>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Good Luck</label>
-          <input type="number" class="form-control" name="goodluck_amt" id="goodluck_amt" min="0">
+          <label class="form-label">Amount</label>
+          <input type="number" class="form-control" name="amount" id="amount" min="0" required>
         </div>
       </div>
       <div class="mb-3" id="remarks_group" style="display: none;">
         <label class="form-label">Remarks</label>
         <textarea class="form-control" name="remarks" id="remarks" rows="3"></textarea>
       </div>
-      <div class="mb-3">
+      <!-- <div class="mb-3">
         <label class="form-label">Take Photo (Camera)</label>
         <div>
           <video id="camera" width="100%" autoplay playsinline style="border: 1px solid #ccc; border-radius: 5px;"></video>
@@ -124,7 +120,7 @@
           <input type="hidden" name="photo_data" id="photo_data">
           <button type="button" class="btn btn-outline-primary mt-2" onclick="takeSnapshot()">📸 Take Snapshot</button>
         </div>
-      </div>
+      </div> -->
       <div class="text-center">
         <button type="submit" id="saveBtn" class="btn btn-primary px-4">💾 Save Data</button>
         <button type="button" id="enableEditBtn" class="btn btn-warning px-4" style="display: none;">✏️ Edit</button>
@@ -139,16 +135,17 @@
     <div class="mb-2"><strong>Date:</strong> <span id="prev_date">{{ now|date:"Y-m-d" }}</span></div>
     <div class="mb-2"><strong>Time:</strong> <span id="prev_time">{{ now|time:"H:i:s" }}</span></div>
     <div class="mb-2"><strong>Customer Name:</strong> <span id="prev_cust_name">-</span></div>
-    <div class="mb-2"><strong>Machine:</strong> <span id="prev_machine">-</span></div>
+    <div class="mb-2"><strong>Machine Name:</strong> <span id="prev_machine_name">-</span></div>
+    <div class="mb-2"><strong>Machine Number:</strong> <span id="prev_machine_number">-</span></div>
     <div class="mb-2"><strong>In Points:</strong> <span id="prev_in_points">-</span></div>
     <div class="mb-2"><strong>Out Points:</strong> <span id="prev_out_points">-</span></div>
-    <div class="mb-2"><strong>Good luck:</strong> <span id="prev_good_luck">-</span></div>
     <div class="mb-2"><strong>Expense Type:</strong> <span id="prev_expense_type">-</span></div>
-    <div class="mb-2"><strong>Expense Amount:</strong> <span id="prev_expense_amt">-</span></div>
+    <div class="mb-2"><strong>Amount:</strong> <span id="prev_good_luck">-</span></div>
     <div class="mb-2"><strong>Remarks:</strong> <span id="prev_remarks">-</span></div>
     <!-- Live photo preview -->
-    <div class="mb-2"><strong>Captured Photo:</strong></div>
-    <img id="preview_img" src="" style="max-width: 100%; border: 1px solid #ccc; border-radius: 5px;" alt="No photo yet">
+     
+    <!-- <div class="mb-2"><strong>Captured Photo:</strong></div>
+    <img id="preview_img" src="" style="max-width: 100%; border: 1px solid #ccc; border-radius: 5px;" alt="No photo yet"> -->
     <div class="text-center mt-3">
       <button id="printBtn" class="btn btn-secondary px-4" style="display: none;">🖨️ Print Data</button>
     </div>
@@ -160,46 +157,46 @@
   const photoInput = document.getElementById('photo_data');
   const previewImg = document.getElementById('preview_img');
 
-  if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function (stream) {
-        video.srcObject = stream;
-      })
-      .catch(function (error) {
-        alert("Camera not accessible.");
-      });
-  }
-  function takeSnapshot() {
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-    const dataURL = canvas.toDataURL('image/png');
-    photoInput.value = dataURL;
+  // if (navigator.mediaDevices.getUserMedia) {
+  //   navigator.mediaDevices.getUserMedia({ video: true })
+  //     .then(function (stream) {
+  //       video.srcObject = stream;
+  //     })
+  //     .catch(function (error) {
+  //       alert("Camera not accessible.");
+  //     });
+  // }
+  // function takeSnapshot() {
+  //   const context = canvas.getContext('2d');
+  //   canvas.width = video.videoWidth;
+  //   canvas.height = video.videoHeight;
+  //   context.drawImage(video, 0, 0);
+  //   const dataURL = canvas.toDataURL('image/png');
+  //   photoInput.value = dataURL;
 
-    if (previewImg) {
-      previewImg.src = dataURL;
-    }
-    alert("Photo captured!");
-  }
+  //   if (previewImg) {
+  //     previewImg.src = dataURL;
+  //   }
+  //   alert("Photo captured!");
+  // }
   // Generic function to update text preview in real-time
-  const updatePreview = (selector, target) => {
-    const input = document.querySelector(selector);
-    const preview = document.querySelector(target);
-    if (input && preview) {
-      input.addEventListener('input', function () {
-        preview.innerText = this.value.trim() || '-';
-      });
-    }
-  };
+  // const updatePreview = (selector, target) => {
+  //   const input = document.querySelector(selector);
+  //   const preview = document.querySelector(target);
+  //   if (input && preview) {
+  //     input.addEventListener('input', function () {
+  //       preview.innerText = this.value.trim() || '-';
+  //     });
+  //   }
+  // };
 
   // Attach listeners to all fields
   updatePreview('[name="customer_name"]', '#prev_cust_name');
-  updatePreview('[name="machine"]', '#prev_machine');
+  updatePreview('[name="machine_name"]', '#prev_machine_name');
+  updatePreview('[name="machine_number"]', '#prev_machine_number');
   updatePreview('[name="in_points"]', '#prev_in_points');
   updatePreview('[name="out_points"]', '#prev_out_points');
-  updatePreview('[name="goodluck_amt"]', '#prev_good_luck');
-  updatePreview('[name="expense_amt"]', '#prev_expense_amt');
+  updatePreview('[name="amount"]', '#prev_good_luck');
   updatePreview('[name="remarks"]', '#prev_remarks');
 
   const expenseSelect = document.querySelector('[name="expense_type"]');
