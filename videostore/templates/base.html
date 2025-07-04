@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Videogame Project</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body {
-      display: flex;
-      min-height: 100vh;
+    html, body {
       margin: 0;
       font-family: Arial, sans-serif;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
-    .sidebar {
+    /* DESKTOP SIDEBAR */
+    .desktop-sidebar {
       background-color: #2c3e50;
       color: white;
       min-width: 220px;
       max-width: 220px;
+      height: 100vh;
+      overflow-y: auto;
       transition: all 0.3s ease-in-out;
-      overflow: hidden;
     }
 
-    .sidebar.collapsed {
+    .desktop-sidebar.collapsed {
       min-width: 70px;
       max-width: 70px;
     }
 
-    .sidebar .sidebar-header {
+    .desktop-sidebar .sidebar-header {
       padding: 20px;
       font-size: 18px;
       font-weight: bold;
@@ -36,39 +38,43 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .sidebar ul.nav {
+    .desktop-sidebar ul.nav {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
-    .sidebar ul.nav li {
+    .desktop-sidebar ul.nav li {
       padding: 15px 20px;
-      width: 100%;
     }
 
-    .sidebar ul.nav li a {
+    .desktop-sidebar ul.nav li a {
       color: white;
       text-decoration: none;
       display: block;
     }
 
-    .sidebar ul.nav li:hover {
+    .desktop-sidebar ul.nav li:hover {
       background-color: #34495e;
     }
 
-    .content {
-      flex-grow: 1;
-      padding: 20px;
+    .desktop-sidebar .submenu {
+      display: none;
+      list-style: none;
+      padding-left: 16px;
+      margin: 0;
     }
 
-    .breadcrumb-wrapper {
-      background-color: #f1f1f1;
-      padding: 10px 20px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+    .desktop-sidebar .has-submenu:hover .submenu {
+      display: block;
     }
 
-    .toggle-btn {
+    .desktop-sidebar .submenu a {
+      font-size: 14px;
+      padding: 2px 8px;
+    }
+
+    .desktop-sidebar .toggle-btn {
       background: none;
       border: none;
       color: white;
@@ -79,112 +85,196 @@
       width: 100%;
     }
 
-    .sidebar.collapsed .username-text,
-.sidebar.collapsed .logout-icon,
-.sidebar.collapsed .store-info,
-.sidebar.collapsed .nav-text {
-  display: none !important;
-}
+    .desktop-sidebar.collapsed .username-text,
+    .desktop-sidebar.collapsed .logout-icon,
+    .desktop-sidebar.collapsed .store-info,
+    .desktop-sidebar.collapsed .nav-text {
+      display: none !important;
+    }
 
-.sidebar.collapsed .sidebar-header {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
+    .desktop-sidebar.collapsed .sidebar-header {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    /* MOBILE OFFCANVAS SIDEBAR */
+    .mobile-sidebar {
+      background-color: #2c3e50;
+      color: white;
+      width: 100%;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .mobile-sidebar .sidebar-header {
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: larger;
+    }
+
+    .mobile-sidebar ul.nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+    }
+
+    .mobile-sidebar ul.nav li {
+      padding: 12px 16px;
+      margin: 0;
+      width: 100%;
+    }
+
+    .mobile-sidebar ul.nav li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      font-size: large;
+    }
+
+    .mobile-sidebar ul.nav li a:hover {
+      background-color: #34495e;
+    }
+
+    .mobile-sidebar .submenu {
+      display: none;
+      list-style: none;
+      padding-left: 16px;
+      margin: 0;
+    }
+
+    .mobile-sidebar .has-submenu:hover .submenu {
+      display: block;
+    }
+
+    .mobile-sidebar .submenu a {
+      font-size: 14px;
+      padding: 2px 8px;
+    }
+
+    .content {
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    /* ENSURE SIDEBAR IS HIDDEN ON MOBILE */
+    @media (max-width: 767.98px) {
+      .desktop-sidebar {
+        display: none !important;
+      }
+    }
   </style>
-<style>
-.nav {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav li {
-  position: relative;
-  margin: 0;
-  padding: 0;
-}
-
-.nav a {
-  color: white;
-  text-decoration: none;
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 16px;
-}
-
-.nav a:hover {
-  text-decoration: underline;
-}
-
-.submenu {
-  display: none;
-  list-style: none;
-  padding-left: 16px;
-  margin: 0;
-}
-
-.has-submenu:hover .submenu {
-  display: block;
-}
-
-.submenu a {
-  font-size: 14px;
-  padding: 2px 8px;
-}
-</style>
 </head>
 <body>
-  <!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
-  <!-- User Profile + Logout -->
-  <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
-    <div class="d-flex align-items-center username-text">
-      <i class="bi bi-person-circle me-2 fs-5"></i>
-      <span >{{ request.user.username }}</span>
+  <!-- MOBILE NAVBAR (only on mobile) -->
+  <nav class="navbar navbar-dark bg-dark d-md-none">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <span class="navbar-brand ms-2">{{ request.user.store.name|default:"VideoGame" }}</span>
     </div>
-    <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
-      <i class="bi bi-box-arrow-right fs-5"></i>
-    </a>
+  </nav>
+
+  <!-- DESKTOP LAYOUT -->
+  <div class="d-block d-md-flex">
+    <!-- DESKTOP SIDEBAR (only md and up) -->
+    <div class="desktop-sidebar d-none d-md-block" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
+        <div class="d-flex align-items-center username-text">
+          <i class="bi bi-person-circle me-2 fs-5"></i>
+          <span>{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
+          <i class="bi bi-box-arrow-right fs-5"></i>
+        </a>
+      </div>
+
+      <div class="sidebar-header small text-center store-info">
+        {% if request.user.store %}
+          🏬 {{ request.user.store.name }}
+        {% endif %}
+      </div>
+
+      <ul class="nav nav-text">
+        <li class="has-submenu">
+          <a href="#">➕ Add Entries ▾</a>
+          <ul class="submenu">
+            <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
+            <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
+          </ul>
+        </li>
+        <li class="has-submenu">
+          <a href="#">➕ View Entries ▾</a>
+          <ul class="submenu">
+            <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
+            <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
+          </ul>
+        </li>
+        {% if request.user.is_superuser %}
+          <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
   </div>
 
-  <!-- Store Info -->
-  <div class="sidebar-header small text-center store-info">
-    {% if request.user.store %}
-      🏬 {{ request.user.store.name }}
-    {% endif %}
+  <!-- MOBILE OFFCANVAS SIDEBAR -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header bg-dark text-white">
+      <h5 class="offcanvas-title" id="mobileSidebarLabel">{{ request.user.store.name|default:"VideoGame" }}</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mobile-sidebar">
+      <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
+        <div class="d-flex align-items-center username-text">
+          <i class="bi bi-person-circle me-2 fs-5"></i>
+          <span>{{ request.user.username }}</span>
+        </div>
+        <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
+          <i class="bi bi-box-arrow-right fs-5"></i>
+        </a>
+      </div>
+
+      <div class="sidebar-header small text-center store-info">
+        {% if request.user.store %}
+          🏬 {{ request.user.store.name }}
+        {% endif %}
+      </div>
+
+      <ul class="nav nav-text">
+        <li class="has-submenu">
+          <a href="#">➕ Add Entries ▾</a>
+          <ul class="submenu">
+            <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
+            <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
+          </ul>
+        </li>
+        <li class="has-submenu">
+          <a href="#">➕ View Entries ▾</a>
+          <ul class="submenu">
+            <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
+            <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
+          </ul>
+        </li>
+        {% if request.user.is_superuser %}
+          <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
+        {% endif %}
+      </ul>
+    </div>
   </div>
 
-<ul class="nav nav-text">
-  <!-- Add Entries with submenu -->
-  <li class="has-submenu">
-    <a href="#">➕ Add Entries ▾</a>
-    <ul class="submenu">
-      <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
-      <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
-    </ul>
-  </li>
-
-  <!-- Other main items -->
-   <li class="has-submenu">
-    <a href="#">➕ View Entries ▾</a>
-    <ul class="submenu">
-      <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
-      <li><a href="{% url 'customer_entries' %}">📝All  Customer Entry</a></li>
-    </ul>
-  </li>
-
-  {% if request.user.is_superuser %}
-    <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
-  {% endif %}
-</ul>
-</div>
-
-    {% block content %}{% endblock %}
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('collapsed');
