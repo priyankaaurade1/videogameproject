@@ -2,110 +2,146 @@
 {% load static %}
 {% block page_title %}Customer entires{% endblock %}
 {% block content %}
-  <style>
-    .navbar {
-      background-color:  #2c3e50;
-    }
-    .navbar-brand, .nav-link, .navbar-text {
-      color: white !important;
-    }
-    .container {
-      padding-top: 30px;
-    }
-    .card {
-      margin-bottom: 20px;
-    }
+<style>
+  .navbar {
+    background-color:  #2c3e50;
+  }
+  .navbar-brand, .nav-link, .navbar-text {
+    color: white !important;
+  }
+  .container {
+    padding-top: 30px;
+  }
+  .card {
+    margin-bottom: 20px;
+  }
+  .card-header {
+    background-color:  #2c3e50;
+    color: white;
+    font-weight: 600;
+  }
+  .btn-primary {
+    background-color:  #2c3e50;
+    border-color:  #2c3e50;
+  }
+  .btn-primary:hover {
+    background-color: #125ea3;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+  }
+  .form-label {
+    font-weight: 600;
+  }
+
+  /* Mobile tweaks for Actions buttons */
+  .action-buttons {
+    display: flex;
+    flex-wrap: nowrap;  
+    gap: 0.25rem;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+
+  @media (max-width: 576px) {
     .card-header {
-      background-color:  #2c3e50;
-      color: white;
-      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
     }
-    .btn-primary {
-      background-color:  #2c3e50;
-      border-color:  #2c3e50;
+    .btn {
+      font-size: 0.875rem;
+      padding: 0.25rem 0.5rem;
     }
-    .btn-primary:hover {
-      background-color: #125ea3;
+    .modal-title {
+      font-size: 1rem;
     }
-    .table th, .table td {
-      vertical-align: middle;
-    }
-    .form-label {
-      font-weight: 600;
-    }
-  </style>
-  <style>
-  .form-control-with-icon {
-    position: relative;
-  }
-  .form-control-with-icon input {
-    padding-right: 2.5rem;
-  }
-  .form-control-with-icon i {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #6c757d;
   }
 </style>
+<style>
+  .content,.card-body  {
+    padding: 0px !important;
+  }
 
-<!-- 
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">🎛️ SuperAdmin Dashboard</a>
-    <span class="navbar-text">
-      Hello, {{ request.user.username }} &nbsp;|&nbsp; <a href="{% url 'custom_logout' %}" class="text-white">Logout</a>
-    </span>
-  </div>
-</nav> -->
+</style>
+
 <div class="container">
-{% if messages %}
-  <div id="messageContainer">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} mt-2">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+  {% if messages %}
+    <div id="messageContainer">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mt-2">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <div class="row">
-    <div class="col-lg-6">
+    <div class="col-12 col-lg-6">
       <!-- Stores Card -->
       <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
           🏬 Stores
-          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">➕ Add Store</button>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">
+            ➕ Add Store
+          </button>
         </div>
         <div class="card-body">
           {% if stores %}
-            <table class="table table-bordered table-striped mb-3">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Location</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for store in stores %}
-                <tr>
-                  <td>{{ store.name }}</td>
-                  <td>{{ store.location }}</td>
-                  <td>
-                    <div >
-                      <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewStoreModal{{ store.id }}">👁️</button>
-                      <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStoreModal{{ store.id }}">✏️</button>
-                      <button type="submit" name="delete_store" value="{{ store.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this store?')">🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped mb-3 text-nowrap">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for store in stores %}
+                  <tr>
+                    <td>{{ store.name }}</td>
+                    <td>{{ store.location }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewStoreModal{{ store.id }}">👁️</button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStoreModal{{ store.id }}">✏️</button>
+                        <form method="post" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="delete_store" value="1">
+                          <input type="hidden" name="store_id" value="{{ store.id }}">
+                          <button type="submit" class="btn btn-sm btn-danger" >🗑️</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
             {% for store in stores %}
+            <div class="modal fade" id="viewStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">👁️ View Store Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p><strong>Store Name:</strong> {{ store.name }}</p>
+                    <p><strong>Location:</strong> {{ store.location }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% for store in stores %}
+              <!-- Edit Store Modal -->
               <div class="modal fade" id="editStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
@@ -114,7 +150,7 @@
                       <input type="hidden" name="edit_store" value="1">
                       <input type="hidden" name="store_id" value="{{ store.id }}">
                       <div class="modal-header">
-                        <h5 class="modal-title">Edit Store</h5>
+                        <h5 class="modal-title">✏️ Edit Store</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                       </div>
                       <div class="modal-body">
@@ -128,7 +164,7 @@
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button type="submit"  onsubmit="return confirm('Save changes?');" class="btn btn-success">Save</button>
+                        <button type="submit" class="btn btn-success">Save</button>
                       </div>
                     </form>
                   </div>
@@ -139,6 +175,8 @@
             <p class="text-muted">No stores available.</p>
           {% endif %}
         </div>
+
+        <!-- Add Store Modal -->
         <div class="modal fade" id="addStoreModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -169,41 +207,88 @@
       </div>
       <!-- Machines Card -->
       <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
           🎰 Machines
-          <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addMachineModal">➕ Add Machine</button>
+          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addMachineModal">➕ Add Machine</button>
         </div>
         <div class="card-body">
           {% if machines %}
-            <table class="table table-bordered table-striped mb-3">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Number</th>
-                  <th>Store</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for machine in machines %}
-                <tr>
-                  <td>{{ machine.name }}</td>
-                  <td>{{ machine.number }}</td>
-                  <td>{{ machine.store.name }}</td>
-                  <td>
-                    <div>
-                      <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewMachineModal{{ machine.id }}">👁️</button>
-                      <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editMachineModal{{ machine.id }}">✏️</button>
-                      <button type="submit" name="delete_machine" value="{{ machine.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this machine?')">🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+            <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-3 text-nowrap">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Number</th>
+                    <th>Store</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for machine in machines %}
+                  <tr>
+                    <td>{{ machine.name }}</td>
+                    <td>{{ machine.number }}</td>
+                    <td>{{ machine.store.name }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewMachineModal{{ machine.id }}">👁️</button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editMachineModal{{ machine.id }}">✏️</button>
+                        <form method="post" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="delete_machine" value="1">
+                          <input type="hidden" name="machine_id" value="{{ machine.id }}">
+                          <button type="submit" class="btn btn-sm btn-danger" >🗑️</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           {% else %}
             <p class="text-muted">No machines available.</p>
           {% endif %}
+          {% for machine in machines %}
+          <div class="modal fade" id="editMachineModal{{ machine.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="edit_machine" value="1">
+                  <input type="hidden" name="machine_id" value="{{ machine.id }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title">✏️ Edit Machine</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">Machine Name</label>
+                      <input type="text" name="name" class="form-control" value="{{ machine.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Number</label>
+                      <input type="text" name="number" class="form-control" value="{{ machine.number }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Assign to Store</label>
+                      <select name="store_id" class="form-select" required>
+                        <option value="">-- Select Store --</option>
+                        {% for store in stores %}
+                          <option value="{{ store.id }}" {% if store.id == machine.store.id %}selected{% endif %}>{{ store.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
           <!-- Add Machine Modal -->
           <div class="modal fade" id="addMachineModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -256,6 +341,9 @@
                   <p><strong>Number:</strong> {{ machine.number }}</p>
                   <p><strong>Store:</strong> {{ machine.store.name }}</p>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
               </div>
             </div>
           </div>
@@ -273,12 +361,13 @@
         </div>
         <div class="card-body">
           {% if staff_users %}
-            <table class="table table-striped mb-3">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-3 text-nowrap">
               <thead>
                 <tr>
                   <th>Username</th>
                   <th>Phone</th>
-                  <th>Email</th>
+                  <!-- <th>Email</th> -->
                   <th>Store</th>
                   <th>Actions</th>
                 </tr>
@@ -288,61 +377,67 @@
                   <tr>
                     <td>{{ user.username }}</td>
                     <td>{{ user.phone_number|default:"-" }}</td>
-                    <td>{{ user.email }}</td>
+                    <!-- <td>{{ user.email }}</td> -->
                     <td>{{ user.store.name|default:"Not Assigned" }}</td>
                     <td>
-                      <div>
+                      <div class="action-buttons">
                         <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewStaffModal{{ user.id }}">👁️</button>
                         <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStaffModal{{ user.id }}">✏️</button>
-                        <button type="submit" name="delete_Staff" value="{{ user.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this store?')">🗑️</button>
+                        <form method="post" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="delete_staff" value="1">
+                          <input type="hidden" name="staff_id" value="{{ user.id }}">
+                          <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                        </form>
                       </div>
                     </td>
                   </tr>
                 {% endfor %}
-                {% for user in staff_users %}
-                <div class="modal fade" id="editStaffModal{{ user.id }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="edit_staff" value="1">
-                        <input type="hidden" name="staff_id" value="{{ user.id }}">
-                        <div class="modal-header">
-                          <h5 class="modal-title">Edit Staff</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                          <div class="mb-2">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="staff_username" class="form-control" value="{{ user.username }}" required>
-                          </div>
-                          <div class="mb-2">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="staff_email" class="form-control" value="{{ user.email }}">
-                          </div>
-                          <div class="mb-2">
-                            <label class="form-label">Assign to Store</label>
-                            <select name="staff_store" class="form-select">
-                              <option value="">-- Optional --</option>
-                              {% for store in stores %}
-                                <option value="{{ store.id }}" {% if user.store and user.store.id == store.id %}selected{% endif %}>{{ store.name }}</option>
-                              {% endfor %}
-                            </select>
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="submit"class="btn btn-success">Save</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-                {% endfor %}
               </tbody>
             </table>
+          </div>
           {% else %}
             <p class="text-muted">No staff users yet.</p>
           {% endif %}
+          {% for user in staff_users %}
+          <div class="modal fade" id="editStaffModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="edit_staff" value="1">
+                  <input type="hidden" name="staff_id" value="{{ user.id }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title">✏️ Edit Staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-2">
+                      <label class="form-label">Username</label>
+                      <input type="text" name="staff_username" class="form-control" value="{{ user.username }}" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label">Email</label>
+                      <input type="email" name="staff_email" class="form-control" value="{{ user.email }}">
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label">Assign to Store</label>
+                      <select name="staff_store" class="form-select">
+                        <option value="">-- Optional --</option>
+                        {% for store in stores %}
+                          <option value="{{ store.id }}" {% if user.store and user.store.id == store.id %}selected{% endif %}>{{ store.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit"class="btn btn-success">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
           <!-- Add Staff Modal -->
           <div class="modal fade" id="addStaffModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -409,6 +504,9 @@
                   <p><strong>Phone:</strong> {{ user.phone|default:"-" }}</p>
                   <p><strong>Store:</strong> {{ user.store.name|default:"Not Assigned" }}</p>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
               </div>
             </div>
           </div>

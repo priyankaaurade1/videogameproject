@@ -13,6 +13,7 @@ urlpatterns = [
     path('export/customer/', views.export_customer_entries, name='export_customer_entries'),
     # path('all_entries', views.all_entries, name='all_entries'),
     path('entries/staff/', views.staff_entries, name='staff_entries'),
+    path('entry/staff/<int:entry_id>/edit/', views.edit_staff_entry, name='edit_staff_entry'),
     path('entries/customer/', views.customer_entries, name='customer_entries'),
     path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('login/', views.custom_login, name='custom_login'),

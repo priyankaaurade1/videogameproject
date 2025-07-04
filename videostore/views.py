@@ -17,6 +17,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import user_passes_test
 import base64
 from django.core.files.base import ContentFile
+import uuid
+from django.shortcuts import get_object_or_404
+
 IST = pytz.timezone('Asia/Kolkata')
 
 def custom_login(request):
@@ -212,84 +215,6 @@ def generate_bill_no():
 
     return today_str + next_seq
 
-# def export_report(request):
-#     workbook = openpyxl.Workbook()
-#     sheet = workbook.active
-#     sheet.title = 'Game Report'
-#     # Headers
-#     headers = [
-#         'Staff', 'Customer ID', 'Customer Name', 'Machine', 'In Points',
-#         'Out Points', 'Good Luck', 'Expense Type','Expense Amount' 'Bill No', 'Date', 'Time', 
-#     ]
-#     sheet.append(headers)
-
-#     for idx, entry in enumerate(GameData.objects.all(), start=2):
-#         sheet.append([
-#             entry.staff.username,
-#             entry.customer_id,
-#             entry.customer_name,
-#             entry.machine,
-#             entry.in_points,
-#             entry.out_points,
-#             entry.good_luck,
-#             entry.expense_type,
-#             entry.expense_amt,
-#             entry.bill_no,
-#             entry.date.strftime('%Y-%m-%d'),
-#             entry.time.strftime('%H:%M:%S'),
-#             "", 
-#         ])
-
-#     # Prepare response
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = 'attachment; filename=Staff Entries.xlsx'
-#     workbook.save(response)
-#     return response
-
-@login_required
-def export_staff_entries(request):
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    sheet.title = 'Staff Entries'
-
-    # Headers
-    headers = [
-        'Staff', 'Customer ID', 'Customer Name', 'Machine', 'In Points',
-        'Out Points', 'Good Luck', 'Expense Type', 'Expense Amount', 'Bill No', 'Date', 'Time'
-    ]
-    sheet.append(headers)
-
-    # Filter entries
-    if request.user.role == 'staff':
-        queryset = GameData.objects.filter(entry_source='staff_entry', staff=request.user)
-    else:
-        queryset = GameData.objects.filter(entry_source='staff_entry')
-
-    for entry in queryset.select_related('staff', 'machine__store'):
-        machine_text = f"{entry.machine.name} - {entry.machine.number} ({entry.machine.store.name})" if entry.machine else "-"
-        sheet.append([
-            entry.staff.username if entry.staff else '-',
-            entry.customer_id,
-            entry.customer_name,
-            machine_text,
-            entry.in_points,
-            entry.out_points,
-            entry.good_luck,
-            entry.expense_type,
-            entry.expense_amt,
-            entry.bill_no,
-            entry.date.strftime('%Y-%m-%d'),
-            entry.time.strftime('%H:%M:%S')
-        ])
-
-    # Prepare response
-    response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = 'attachment; filename=Staff_Entries.xlsx'
-    workbook.save(response)
-    return response
-
 @login_required
 def export_staff_entries(request):
     workbook = openpyxl.Workbook()
@@ -378,81 +303,56 @@ def export_customer_entries(request):
 
 @login_required
 def staff_entry(request):
-    if request.user.role == 'staff':
-        if not request.user.store:
+    user = request.user
+
+    # Staff can only see their store's machines
+    if user.role == 'staff':
+        if not user.store:
             messages.error(request, "You are not assigned to any store.")
             return redirect('custom_login')
-        store = request.user.store
-        machines = Machine.objects.filter(store=store)
-        staff_machine = machines.first() if machines.count() == 1 else None
-    elif request.user.is_superuser or request.user.role == 'superadmin':
-        store = None
+        machines = Machine.objects.filter(store=user.store)
+    elif user.is_superuser or user.role == 'superadmin':
         machines = Machine.objects.all()
-        staff_machine = None
     else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
+
     now = timezone.now()
 
     if request.method == 'POST':
-        entry_id = request.POST.get("entry_id")
         machine_id = request.POST.get('machine')
-        photo_file = None
-        photo_data = request.POST.get('photo_data')
-        if photo_data:
-            format, imgstr = photo_data.split(';base64,')
-            ext = format.split('/')[-1]
-            photo_file = ContentFile(base64.b64decode(imgstr), name=f"{random.randint(100000,999999)}.{ext}")
+        try:
+            machine = Machine.objects.get(pk=machine_id) if machine_id else None
+        except Machine.DoesNotExist:
+            machine = None
 
-        if entry_id:
-            # Editing existing record
-            entry = GameData.objects.get(pk=entry_id)
-            entry.customer_name = request.POST['customer_name']
-            entry.machine = Machine.objects.get(pk=machine_id) if machine_id else None
-            entry.in_points = request.POST['in_points']
-            entry.out_points = request.POST['out_points']
-            entry.good_luck = request.POST.get('good_luck') or 0
-            entry.expense_type = request.POST['expense_type']
-            entry.expense_amt = request.POST.get('expense_amt') or 0
-            entry.remarks = request.POST['remarks']
-            entry.date = now.date()
-            entry.entry_source = 'staff_entry'
-            # if photo_file:
-            #     entry.photo = photo_file
-            entry.save()
-        else:
-            # Creating new record
-            entry = GameData.objects.create(
-                staff=request.user,
-                customer_id="cust-" + str(random.randint(10000, 99999)),
-                customer_name=request.POST['customer_name'],
-                machine=Machine.objects.get(pk=request.POST['machine']) if request.POST.get('machine') else None,
-                in_points=request.POST['in_points'],
-                out_points=request.POST['out_points'],
-                good_luck=request.POST.get('good_luck') or 0,
-                expense_type=request.POST['expense_type'],
-                expense_amt=request.POST.get('expense_amt') or 0,
-                bill_no=generate_bill_no(),
-                # photo=photo_file,
-                remarks=request.POST['remarks'],
-                date=now.date(),
-                time=now.time(),
-                entry_source='staff_entry'
-            )
+        reading_1 = request.POST.get('reading_1') or 0
+        reading_2 = request.POST.get('reading_2') or 0
+        reading_3 = request.POST.get('reading_3') or 0
+        reading_4 = request.POST.get('reading_4') or 0
 
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True, 'id': entry.id})
+        entry = ReadingData.objects.create(
+            staff=user,
+            machine=machine,
+            reading_no=generate_bill_no(),
+            reading_1=reading_1,
+            reading_2=reading_2,
+            reading_3=reading_3,
+            reading_4=reading_4,
+            entry_source='staff_entry'
+        )
 
-        messages.success(request, "✅ Data saved successfully!")
+        # Handle uploaded photos
+        for photo in request.FILES.getlist('photos'):
+            ReadingDataPhoto.objects.create(reading_data=entry, photo=photo)
+
+        messages.success(request, "✅ Reading entry saved successfully!")
         return redirect('staff_entry')
 
     context = {
         'now': now,
-        'customer_id': "cust-" + str(random.randint(10000, 99999)),
-        'bill_no': generate_bill_no(),
-        'stores':store,
-        'staff_machine':staff_machine,
-        'machines':machines,
+        'machines': machines,
+        'Reading_no': generate_bill_no(),
     }
     return render(request, 'staff_entry.html', context)
 
@@ -477,13 +377,7 @@ def customer_staff_entry(request):
     if request.method == 'POST':
         entry_id = request.POST.get("entry_id")
         machine_id = request.POST.get('machine')
-        photo_file = None
-        photo_data = request.POST.get('photo_data')
-        if photo_data:
-            format, imgstr = photo_data.split(';base64,')
-            ext = format.split('/')[-1]
-            photo_file = ContentFile(base64.b64decode(imgstr), name=f"{random.randint(100000,999999)}.{ext}")
-
+    
         if entry_id:
             # Editing existing record
             entry = GameData.objects.get(pk=entry_id)
@@ -498,8 +392,6 @@ def customer_staff_entry(request):
             entry.date = now.date()
             entry.time = now.time()
             entry.entry_source = 'customer_staff_entry'
-            if photo_file:
-                entry.photo = photo_file
             entry.save()
         else:
             # Creating new record
@@ -514,7 +406,6 @@ def customer_staff_entry(request):
                 expense_type=request.POST['expense_type'],
                 expense_amt=request.POST.get('expense_amt') or 0,
                 bill_no=generate_bill_no(),
-                photo=photo_file,
                 remarks=request.POST['remarks'],
                 date=now.date(),
                 time=now.time(),
@@ -537,53 +428,78 @@ def customer_staff_entry(request):
     }
     return render(request, 'customer_staff_entry.html', context)
 
-# @login_required
-# def all_entries(request):
-#     if request.user.role == 'staff':
-#         if not request.user.store:
-#             messages.error(request, "You are not assigned to any store.")
-#             return redirect('custom_login')
-#         stores = Store.objects.filter(pk=request.user.store.pk)
-#     elif request.user.is_superuser or request.user.role == 'superadmin':
-#         stores = Store.objects.all()
-#     else:
-#         messages.error(request, "Unauthorized access.")
-#         return redirect('custom_login')
-
-#     entries = GameData.objects.select_related('machine__store', 'staff').order_by('-id')[:100]
-#     return render(request, 'entries_list.html', {
-#         'entries': entries,
-#         'stores': stores
-#     })
-
 @login_required
 def staff_entries(request):
     if request.user.role == 'staff':
         if not request.user.store:
             messages.error(request, "You are not assigned to any store.")
             return redirect('custom_login')
-        
-        # Staff should only see their own entries
-        entries = GameData.objects.filter(
+        entries = ReadingData.objects.filter(
             entry_source='staff_entry',
             staff=request.user
-        ).select_related('machine__store', 'staff').order_by('-id')[:100]
-
+        ).select_related('machine__store', 'staff').prefetch_related('photos').order_by('-id')[:100]
         stores = Store.objects.filter(pk=request.user.store.pk)
-
     elif request.user.is_superuser or request.user.role == 'superadmin':
-        entries = GameData.objects.filter(entry_source='staff_entry') \
-                                  .select_related('machine__store', 'staff') \
-                                  .order_by('-id')[:100]
+        entries = ReadingData.objects.filter(
+            entry_source='staff_entry'
+        ).select_related('machine__store', 'staff').prefetch_related('photos').order_by('-id')[:100]
         stores = Store.objects.all()
     else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
-
     return render(request, 'staff_entries_list.html', {
         'entries': entries,
         'stores': stores
     })
+
+@login_required
+def edit_staff_entry(request, entry_id):
+    user = request.user
+    entry = get_object_or_404(ReadingData, pk=entry_id)
+
+    if user.role == 'staff' and entry.staff != user:
+        messages.error(request, "You are not authorized to edit this entry.")
+        return redirect('staff_entries')
+
+    if user.role == 'staff':
+        machines = Machine.objects.filter(store=user.store)
+    elif user.is_superuser or user.role == 'superadmin':
+        machines = Machine.objects.all()
+    else:
+        messages.error(request, "Unauthorized access.")
+        return redirect('custom_login')
+
+    if request.method == 'POST':
+        machine_id = request.POST.get('machine')
+        entry.machine = Machine.objects.get(pk=machine_id) if machine_id else None
+        entry.reading_1 = request.POST.get('reading_1') or 0
+        entry.reading_2 = request.POST.get('reading_2') or 0
+        entry.reading_3 = request.POST.get('reading_3') or 0
+        entry.reading_4 = request.POST.get('reading_4') or 0
+        entry.save()
+
+        # Handle deleted photos
+        delete_photo_ids = request.POST.get('delete_photos', '')
+        if delete_photo_ids:
+            ids = [int(i) for i in delete_photo_ids.split(',') if i.strip().isdigit()]
+            entry.photos.filter(id__in=ids).delete()
+
+        # Handle new uploaded photos
+        photos = request.FILES.getlist('photos')
+        for photo in photos:
+            ReadingDataPhoto.objects.create(reading_data=entry, photo=photo)
+
+        messages.success(request, "✅ Reading entry updated successfully!")
+        return redirect('staff_entries')
+
+    context = {
+        'entry': entry,
+        'now': timezone.now(),
+        'machines': machines,
+        'Reading_no': entry.reading_no,
+        'existing_photos': entry.photos.all(),
+    }
+    return render(request, 'staff_entry.html', context)
 
 @login_required
 def customer_entries(request):

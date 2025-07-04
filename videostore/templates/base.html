@@ -201,17 +201,16 @@
           🏬 {{ request.user.store.name }}
         {% endif %}
       </div>
-
       <ul class="nav nav-text">
         <li class="has-submenu">
-          <a href="#">➕ Add Entries ▾</a>
+          <a href="" class="menu-toggle">➕ Add Entries ▾</a>
           <ul class="submenu">
             <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
             <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
           </ul>
         </li>
         <li class="has-submenu">
-          <a href="#">➕ View Entries ▾</a>
+          <a href="" class="menu-toggle">➕ View Entries ▾</a>
           <ul class="submenu">
             <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
             <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
@@ -252,25 +251,26 @@
         {% endif %}
       </div>
 
-      <ul class="nav nav-text">
-        <li class="has-submenu">
-          <a href="#">➕ Add Entries ▾</a>
-          <ul class="submenu">
-            <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
-            <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
-          </ul>
-        </li>
-        <li class="has-submenu">
-          <a href="#">➕ View Entries ▾</a>
-          <ul class="submenu">
-            <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
-            <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
-          </ul>
-        </li>
-        {% if request.user.is_superuser %}
-          <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
-        {% endif %}
-      </ul>
+<ul class="nav nav-text">
+  <li class="has-submenu">
+    <button type="button" class="menu-toggle" >➕ Add Entries ▾</button>
+    <ul class="submenu">
+      <li><a href="{% url 'staff_entry' %}">📝 Reading Entry</a></li>
+      <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
+    </ul>
+  </li>
+  <li class="has-submenu">
+    <button type="button" class="menu-toggle">➕ View Entries ▾</button>
+    <ul class="submenu">
+      <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
+      <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
+    </ul>
+  </li>
+  {% if request.user.is_superuser %}
+    <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
+  {% endif %}
+</ul>
+
     </div>
   </div>
 
@@ -280,5 +280,14 @@
       document.getElementById('sidebar').classList.toggle('collapsed');
     }
   </script>
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.menu-toggle').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+    });
+  });
+});
+</script>
 </body>
 </html>

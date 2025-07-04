@@ -44,11 +44,33 @@ class GameData(models.Model):
     ])
     expense_amt = models.PositiveIntegerField(default=0)
     bill_no = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to='uploads/', null=True, blank=True)
-    remarks = models.TextField(blank=True)
     entry_source = models.CharField(
         max_length=30,
-        choices=[('customer_staff_entry', 'Customer Entry'), ('staff_entry', 'Staff Entry')],
+        choices=[('customer_staff_entry', 'Customer Entry')],
         default='customer_staff_entry'
     )
+
+class ReadingData(models.Model):
+    staff = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={'role': 'staff'})
+    machine = models.ForeignKey(Machine, on_delete=models.SET_NULL, null=True)
+    reading_no = models.CharField(max_length=100)
+    reading_1 = models.PositiveIntegerField(default=0)
+    reading_2 = models.PositiveIntegerField(default=0)
+    reading_3 = models.PositiveIntegerField(default=0)
+    reading_4 = models.PositiveIntegerField(default=0)
+    date = models.DateField(auto_now_add=True)
+    time = models.TimeField(auto_now_add=True)
+    photo = models.ImageField(upload_to='uploads/', null=True, blank=True)
+    entry_source = models.CharField(
+        max_length=30,
+        choices=[('staff_entry', 'Staff Entry')],
+        default='staff_entry'
+    )
+
+class ReadingDataPhoto(models.Model):
+    reading_data = models.ForeignKey(ReadingData, related_name='photos', on_delete=models.CASCADE)
+    photo = models.ImageField(upload_to='reading_photos/')
+
+    def __str__(self):
+        return f"Photo for {self.reading_data}"
 

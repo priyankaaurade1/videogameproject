@@ -2,7 +2,6 @@
 {% load static %}
 {% block page_title %}Staff entires{% endblock %}
 {% block content %}
-
   <style>
     .container-box {
       display: flex;
@@ -10,7 +9,6 @@
       gap: 20px;
     }
     .form-wrapper {
-      flex: 0 0 60%;
       background: white;
       padding: 20px;
       border-radius: 10px;
@@ -35,329 +33,184 @@
       .form-wrapper, .preview-wrapper {
         flex: 100%;
       }
+      .form-wrapper, .preview-wrapper {
+        margin-top: 20px;
+      }
     }
   </style>
-<div id="statusMessage" style="display:none; font-weight:bold;"></div>
-<div class="container container-box">
-  <!-- Left Form -->
-  <div class="form-wrapper">
-    <h3 class="text-center mb-3">🎮 Game Store - Staff Entry</h3>
-    <div class="text-center mb-4">
-      <strong>🧾 Bill No:</strong> {{ bill_no }}
-    </div>
-    <form method="POST" id="entryForm" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="hidden" name="entry_id" id="entry_id">
-      <div class="row">
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Staff ID</label>
-          <input type="text" class="form-control readonly-field" 
-                value="{% if request.user.store %}{{ request.user.username }} - {{ request.user.store.name }}{% else %}{{ request.user.username }}{% endif %}" 
-                readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Customer ID</label>
-          <input type="text" class="form-control readonly-field" name="customer_id" value="{{ customer_id }}" readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Date</label>
-          <input type="text" class="form-control readonly-field" value="{{ now|date:'Y-m-d' }}" readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Time</label>
-          <input type="text" class="form-control readonly-field" value="{{ now|time:'H:i:s' }}" readonly>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Select Machine</label>
-          <select class="form-select" name="machine" id="machine" 
-                  {% if staff_machine %} disabled {% endif %}
-                  required>
-            {% if staff_machine %}
-              <option value="{{ staff_machine.id }}" selected>
-                {{ staff_machine.name }} - {{ staff_machine.number }}
-              </option>
-            {% else %}
-              <option value="">-- Select Machine --</option>
-              {% for machine in machines %}
-                <option value="{{ machine.id }}">{{ machine.name }} - {{ machine.number }}</option>
-              {% endfor %}
-            {% endif %}
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Customer Name</label>
-          <input type="text" class="form-control" name="customer_name" required>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Good Luck</label>
-            <input type="number" class="form-control" name="goodluck_amt" id="goodluck_amt" min="0">
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">In Points</label>
-          <input type="number" class="form-control" name="in_points" min="0" required>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Out Points</label>
-          <input type="number" class="form-control" name="out_points" min="0" required>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Expense Type</label>
-          <select class="form-select" name="expense_type" id="expense_type" required>
-            <option value="">-- Select Expense Type --</option>
-            <option value="salary">Salary</option>
-            <option value="tea">Tea</option>
-            <option value="water">Water</option>
-            <option value="lightbill">Light Bill</option>
-            <option value="police">Police</option>
-            <option value="goodluck">Good Luck</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Expense Amount</label>
-          <input type="number" class="form-control" name="expense_amt" id="expense_amt" min="0" required>
-        </div>
-      </div>
-      <div class="mb-3" id="remarks_group" style="display: none;">
-        <label class="form-label">Remarks</label>
-        <textarea class="form-control" name="remarks" id="remarks" rows="3"></textarea>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Take Photo (Camera)</label>
-        <div>
-          <video id="camera" width="100%" autoplay playsinline style="border: 1px solid #ccc; border-radius: 5px;"></video>
-          <canvas id="snapshot" style="display: none;"></canvas>
-          <input type="hidden" name="photo_data" id="photo_data">
-          <button type="button" class="btn btn-outline-primary mt-2" onclick="takeSnapshot()">📸 Take Snapshot</button>
-        </div>
-      </div>
-      <div class="text-center">
-        <button type="submit" id="saveBtn" class="btn btn-primary px-4">💾 Save Data</button>
-        <button type="button" id="enableEditBtn" class="btn btn-warning px-4" style="display: none;">✏️ Edit</button>
-      </div>
-    </form>
+  <style>
+  .content,.card-body  {
+    padding: 0px !important;
+  }
+</style>
+<div class="container mt-4">
+ {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success auto-dismiss">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+  <h3 class="text-center mb-3">🎮 Game Store - Reading Entry</h3>
+  <div class="text-center mb-3">
+    <strong>🧾 Reading No:</strong> {{ Reading_no }}
   </div>
-  <!-- Right Panel -->
-  <div class="preview-wrapper" id="printable_area">
-    <h5 class="text-center mb-3">📊 Live Preview</h5>
-    <div class="mb-2"><strong>Staff ID:</strong> <span id="prev_staff_id">{{ request.user.username }} - {{ request.user.store.name }}</span></div>
-    <div class="mb-2"><strong>Customer ID:</strong> <span id="prev_customer_id">{{ customer_id }}</span></div>
-    <div class="mb-2"><strong>Date:</strong> <span id="prev_date">{{ now|date:"Y-m-d" }}</span></div>
-    <div class="mb-2"><strong>Time:</strong> <span id="prev_time">{{ now|time:"H:i:s" }}</span></div>
-    <div class="mb-2"><strong>Machine:</strong> <span id="prev_machine">
-      {% if staff_machine %}
-        {{ staff_machine.name }} - {{ staff_machine.number }}
-      {% else %}
-        -
-      {% endif %}
-    </span>
+  <form method="POST" enctype="multipart/form-data" id="entryForm">
+  {% csrf_token %}
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label class="form-label">Staff ID</label>
+      <input type="text" class="form-control readonly-field"
+             value="{{ request.user.username }}{% if request.user.store %} - {{ request.user.store.name }}{% endif %}"
+             readonly>
     </div>
-    <div class="mb-2"><strong>Customer Name:</strong> <span id="prev_cust_name">-</span></div>
-    <div class="mb-2"><strong>In Points:</strong> <span id="prev_in_points">-</span></div>
-    <div class="mb-2"><strong>Out Points:</strong> <span id="prev_out_points">-</span></div>
-    <div class="mb-2"><strong>Good luck:</strong> <span id="prev_good_luck">-</span></div>
-    <div class="mb-2"><strong>Expense Type:</strong> <span id="prev_expense_type">-</span></div>
-    <div class="mb-2"><strong>Expense Amount:</strong> <span id="prev_expense_amt">-</span></div>
-    <div class="mb-2"><strong>Remarks:</strong> <span id="prev_remarks">-</span></div>
-    <!-- Live photo preview -->
-    <div class="mb-2"><strong>Captured Photo:</strong></div>
-    <img id="preview_img" src="" style="max-width: 100%; border: 1px solid #ccc; border-radius: 5px;" alt="No photo yet">
-    <div class="text-center mt-3">
-      <button id="printBtn" class="btn btn-secondary px-4" style="display: none;">🖨️ Print Data</button>
+    <div class="col-md-3">
+      <label class="form-label">Date</label>
+      <input type="text" class="form-control readonly-field" value="{{ now|date:'Y-m-d' }}" readonly>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Time</label>
+      <input type="text" class="form-control readonly-field" value="{{ now|time:'H:i:s' }}" readonly>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Select Machine</label>
+      <select class="form-select" name="machine" required>
+        <option value="">-- Select Machine --</option>
+        {% for machine in machines %}
+          <option value="{{ machine.id }}"
+                  {% if entry and entry.machine.id == machine.id %}selected{% endif %}>
+            {{ machine.name }} - {{ machine.number }}
+          </option>
+        {% endfor %}
+      </select>
     </div>
   </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label class="form-label">Reading 1</label>
+      <input type="number" class="form-control" name="reading_1" min="0" required
+             value="{{ entry.reading_1|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Reading 2</label>
+      <input type="number" class="form-control" name="reading_2" min="0" required
+             value="{{ entry.reading_2|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Reading 3</label>
+      <input type="number" class="form-control" name="reading_3" min="0" required
+             value="{{ entry.reading_3|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Reading 4</label>
+      <input type="number" class="form-control" name="reading_4" min="0" required
+             value="{{ entry.reading_4|default_if_none:'' }}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Photos (Take / Choose)</label>
+    <input type="file" id="photoInput" name="photos" accept="image/*"
+           capture="environment" multiple class="form-control mb-2">
+    <div id="photoPreview" class="d-flex flex-wrap gap-2"></div>
+  </div>
+
+{% if existing_photos %}
+  <div class="mb-3">
+    <label class="form-label">Existing Photos</label>
+    <div id="existingPhotoPreview" class="d-flex flex-wrap gap-2">
+      {% for photo in existing_photos %}
+        <div class="position-relative existing-photo" data-photo-id="{{ photo.id }}">
+          <img src="{{ photo.photo.url }}" class="rounded border" style="width:80px; height:80px; object-fit:cover;">
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-existing-btn">❌</button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<input type="hidden" name="delete_photos" id="deletePhotosField">
+  <div class="text-center">
+    <button type="submit" class="btn btn-primary px-4">
+      {% if entry %}💾 Update Data{% else %}💾 Save Data{% endif %}
+    </button>
+  </div>
+</form>
+
 </div>
 <script>
-  const video = document.getElementById('camera');
-  const canvas = document.getElementById('snapshot');
-  const photoInput = document.getElementById('photo_data');
-  const previewImg = document.getElementById('preview_img');
-
-  if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function (stream) {
-        video.srcObject = stream;
-      })
-      .catch(function (error) {
-        alert("Camera not accessible.");
-      });
-  }
-  function takeSnapshot() {
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-    const dataURL = canvas.toDataURL('image/png');
-    photoInput.value = dataURL;
-
-    if (previewImg) {
-      previewImg.src = dataURL;
-    }
-    alert("Photo captured!");
-  }
-  // Generic function to update text preview in real-time
-const updatePreview = (selector, target) => {
-    const input = document.querySelector(selector);
-    const preview = document.querySelector(target);
-    if (input && preview) {
-      input.addEventListener('input', function () {
-        preview.innerText = this.value.trim() || '-';
-      });
-    }
-  };
-
-  // Attach listeners to text/number fields
-  updatePreview('[name="customer_name"]', '#prev_cust_name');
-  updatePreview('[name="in_points"]', '#prev_in_points');
-  updatePreview('[name="out_points"]', '#prev_out_points');
-  updatePreview('[name="goodluck_amt"]', '#prev_good_luck');
-  updatePreview('[name="expense_amt"]', '#prev_expense_amt');
-  updatePreview('[name="remarks"]', '#prev_remarks');
-
-  // Handle Expense Type select
-  const expenseSelect = document.querySelector('[name="expense_type"]');
-  const expensePreview = document.getElementById('prev_expense_type');
-  const remarksGroup = document.getElementById('remarks_group');
-
-  if (expenseSelect) {
-    expenseSelect.addEventListener('change', function () {
-      const selected = this.value || '-';
-      if (expensePreview) expensePreview.innerText = selected;
-      if (remarksGroup) remarksGroup.style.display = selected === 'other' ? 'block' : 'none';
-    });
-  }
-
-  // ✅ NEW: Handle Machine select
-  const machineSelect = document.querySelector('[name="machine"]');
-  const machinePreview = document.querySelector('#prev_machine');
-
-  if (machineSelect && machinePreview) {
-    machineSelect.addEventListener('change', function() {
-      const selectedText = this.options[this.selectedIndex].text || '-';
-      machinePreview.innerText = selectedText;
-    });
-  }
-</script>
-<script>
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('entryForm');
-  const printBtn = document.getElementById('printBtn');
-  const saveBtn = document.getElementById('saveBtn');
-  const enableEditBtn = document.getElementById('enableEditBtn');
-  const msgBox = document.getElementById('statusMessage');
+  // New photo preview
+  const photoInput = document.getElementById('photoInput');
+  const previewDiv = document.getElementById('photoPreview');
+  let photoFiles = [];
 
-  if (!form) return;
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    if (!confirm("Are you sure you want to save this data?")) return;
-
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch('', {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
-      });
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const result = await response.json();
-
-      if (result.success) {
-        msgBox.innerText = "✅ Data saved successfully!";
-        msgBox.style.color = "green";
-        msgBox.style.display = "block";
-
-        document.getElementById('entry_id').value = result.id;
-
-        printBtn.style.display = 'inline-block';
-        saveBtn.style.display = 'none';
-        enableEditBtn.style.display = 'inline-block';
-
-        form.querySelectorAll('input, select, textarea').forEach(f => {
-          if (!f.classList.contains('readonly-field')) {
-            f.setAttribute('readonly', true);
-            f.setAttribute('disabled', true);
-          }
-        });
-
-        setTimeout(() => {
-          msgBox.style.display = 'none';
-        }, 5000);
-      } else {
-        throw new Error("Server returned success=false");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to save data.");
+  photoInput.addEventListener('change', function (event) {
+    for (let file of event.target.files) {
+      photoFiles.push(file);
     }
+    renderPhotos();
   });
 
-  if (enableEditBtn) {
-    enableEditBtn.addEventListener('click', function () {
-      form.querySelectorAll('input, select, textarea').forEach(f => {
-        if (!f.classList.contains('readonly-field')) {
-          f.removeAttribute('readonly');
-          f.removeAttribute('disabled');
-        }
-      });
-      saveBtn.style.display = 'inline-block';
-      this.style.display = 'none';
-      msgBox.innerText = "✏️ Edit mode enabled!";
-      msgBox.style.color = "orange";
-      msgBox.style.display = "block";
-      setTimeout(() => {
-        msgBox.style.display = 'none';
-      }, 3000);
+  function renderPhotos() {
+    previewDiv.innerHTML = '';
+    photoFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'position-relative';
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'rounded border';
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.objectFit = 'cover';
+        wrapper.appendChild(img);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
+        removeBtn.innerHTML = '❌';
+        removeBtn.onclick = () => {
+          if (confirm('Are you sure you want to remove this new photo?')) {
+            photoFiles.splice(index, 1);
+            renderPhotos();
+          }
+        };
+        wrapper.appendChild(removeBtn);
+
+        previewDiv.appendChild(wrapper);
+      };
+      reader.readAsDataURL(file);
     });
   }
 
-  if (printBtn) {
-    printBtn.addEventListener('click', function () {
-      const printContents = document.getElementById('printable_area').innerHTML;
+  // Existing photo deletion
+  const deletePhotosField = document.getElementById('deletePhotosField');
+  const existingPhotoPreview = document.getElementById('existingPhotoPreview');
+  let deletedPhotoIds = [];
 
-      const printWindow = window.open('', '', 'width=800,height=600');
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print Preview</title>
-            <style>
-              body { font-family: Arial; margin: 20px; }
-              .mb-2 { margin-bottom: 10px; }
-            </style>
-          </head>
-          <body>${printContents}</body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-
-      // Wait for print to complete (or cancel)
-      printWindow.addEventListener('afterprint', function () {
-        printWindow.close();
-        location.reload();
-      });
-
-      // Trigger print
-      printWindow.print();
-
-      // Fallback in case afterprint not supported
-      printWindow.onafterprint = function () {
-        printWindow.close();
-        location.reload();
-      };
+  if (existingPhotoPreview) {
+    existingPhotoPreview.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-existing-btn')) {
+        const wrapper = e.target.closest('.existing-photo');
+        const photoId = wrapper.getAttribute('data-photo-id');
+        if (photoId) {
+          if (confirm('Are you sure you want to remove this existing photo?')) {
+            deletedPhotoIds.push(photoId);
+            deletePhotosField.value = deletedPhotoIds.join(',');
+            wrapper.remove();
+          }
+        }
+      }
     });
   }
 });
-
 </script>
+<script>
+  setTimeout(function () {
+    document.querySelectorAll('.auto-dismiss').forEach(el => el.remove());
+  }, 3000); 
+</script>
+
 {% endblock %}
