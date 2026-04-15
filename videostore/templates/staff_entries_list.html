@@ -4,10 +4,30 @@
 {% block content %}
 <div class="container mt-4" >
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">All Machine Entries</h2>
-    <form method="get" action="{% url 'export_staff_entries' %}">
-      <button type="submit" class="btn btn-success mb-3">📥 Download Staff Report (Excel)</button>
-    </form>
+      <h2 class="mb-0">All Machine Entries</h2>
+      <form method="get" id="dateForm" class="row g-2 align-items-center justify-content-end">
+
+    <div class="col-12 col-md-auto">
+        <input type="date" name="date" id="dateInput"
+               class="form-control"
+               value="{{ selected_date }}">
+    </div>
+
+    <div class="col-6 col-md-auto">
+        <a href="{% url 'staff_entries' %}" class="btn btn-secondary w-100">
+            Reset
+        </a>
+    </div>
+
+    <div class="col-6 col-md-auto">
+        <button type="submit"
+                formaction="{% url 'export_staff_entries' %}"
+                class="btn btn-success w-100">
+            📥 Excel
+        </button>
+    </div>
+
+</form>
   </div>
   <div id="printableArea" style="max-height: 80vh; overflow-y: auto;">
     <table class="table table-bordered table-striped">
@@ -159,5 +179,14 @@
       });
     });
   });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dateInput = document.getElementById('dateInput');
+
+    dateInput.addEventListener('change', function () {
+        document.getElementById('dateForm').submit();
+    });
+});
 </script>
 {% endblock %}

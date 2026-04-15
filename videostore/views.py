@@ -223,30 +223,28 @@ def export_staff_entries(request):
 
     # Headers
     headers = [
-        'Staff', 'Customer ID', 'Customer Name', 'Machine', 'In Points',
-        'Out Points', 'Good Luck', 'Expense Type', 'Expense Amount', 'Bill No', 'Date', 'Time'
+        'Staff', 'Machine', 'Reading No',
+        'Reading 1', 'Reading 2', 'Reading 3', 'Reading 4',
+        'Date', 'Time'
     ]
     sheet.append(headers)
 
     # Filter entries
+    queryset = ReadingData.objects.filter(entry_source='staff_entry')
+
     if request.user.role == 'staff':
-        queryset = GameData.objects.filter(entry_source='staff_entry', staff=request.user)
-    else:
-        queryset = GameData.objects.filter(entry_source='staff_entry')
+        queryset = queryset.filter(staff=request.user)
 
     for entry in queryset.select_related('staff', 'machine__store'):
         machine_text = f"{entry.machine.name} - {entry.machine.number} ({entry.machine.store.name})" if entry.machine else "-"
         sheet.append([
             entry.staff.username if entry.staff else '-',
-            entry.customer_id,
-            entry.customer_name,
             machine_text,
-            entry.in_points,
-            entry.out_points,
-            entry.good_luck,
-            entry.expense_type,
-            entry.expense_amt,
-            entry.bill_no,
+            entry.reading_no,
+            entry.reading_1,
+            entry.reading_2,
+            entry.reading_3,
+            entry.reading_4,
             entry.date.strftime('%Y-%m-%d'),
             entry.time.strftime('%H:%M:%S')
         ])
@@ -430,26 +428,47 @@ def customer_staff_entry(request):
 
 @login_required
 def staff_entries(request):
+    selected_date = request.GET.get('date')
+
+    if selected_date:
+        date_filter = selected_date
+    else:
+        date_filter = timezone.localdate()
+
     if request.user.role == 'staff':
         if not request.user.store:
             messages.error(request, "You are not assigned to any store.")
             return redirect('custom_login')
+
         entries = ReadingData.objects.filter(
             entry_source='staff_entry',
-            staff=request.user
-        ).select_related('machine__store', 'staff').prefetch_related('photos').order_by('-id')[:100]
+            staff=request.user,
+            date=date_filter
+        )
+
         stores = Store.objects.filter(pk=request.user.store.pk)
+
     elif request.user.is_superuser or request.user.role == 'superadmin':
+
         entries = ReadingData.objects.filter(
-            entry_source='staff_entry'
-        ).select_related('machine__store', 'staff').prefetch_related('photos').order_by('-id')[:100]
+            entry_source='staff_entry',
+            date=date_filter
+        )
+
         stores = Store.objects.all()
+
     else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
+
+    entries = entries.select_related('machine__store', 'staff')\
+                     .prefetch_related('photos')\
+                     .order_by('-id')[:100]
+
     return render(request, 'staff_entries_list.html', {
         'entries': entries,
-        'stores': stores
+        'stores': stores,
+        'selected_date': selected_date or str(date_filter)
     })
 
 @login_required
