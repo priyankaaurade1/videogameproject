@@ -19,7 +19,11 @@ import base64
 from django.core.files.base import ContentFile
 import uuid
 from django.shortcuts import get_object_or_404
-
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 IST = pytz.timezone('Asia/Kolkata')
 
 def custom_login(request):
@@ -383,7 +387,7 @@ def customer_staff_entry(request):
             entry.machine = Machine.objects.get(pk=machine_id) if machine_id else None
             entry.in_points = request.POST['in_points']
             entry.out_points = request.POST['out_points']
-            entry.good_luck = request.POST.get('good_luck') or 0
+            entry.good_luck = request.POST.get('goodluck_amt') or 0
             entry.expense_type = request.POST['expense_type']
             entry.expense_amt = request.POST.get('expense_amt') or 0
             entry.remarks = request.POST['remarks']
@@ -400,7 +404,7 @@ def customer_staff_entry(request):
                 machine=Machine.objects.get(pk=request.POST['machine']) if request.POST.get('machine') else None,
                 in_points=request.POST['in_points'],
                 out_points=request.POST['out_points'],
-                good_luck=request.POST.get('good_luck') or 0,
+                good_luck=request.POST.get('goodluck_amt') or 0,
                 expense_type=request.POST['expense_type'],
                 expense_amt=request.POST.get('expense_amt') or 0,
                 bill_no=generate_bill_no(),
@@ -522,28 +526,94 @@ def edit_staff_entry(request, entry_id):
 
 @login_required
 def customer_entries(request):
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        entry_id = request.POST.get('entry_id')
+        entry = get_object_or_404(GameData, pk=entry_id, entry_source='customer_staff_entry')
+
+        if request.user.role == 'staff' and entry.staff != request.user:
+            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+        if not (request.user.is_superuser or request.user.role == 'superadmin' or entry.staff == request.user):
+            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+        entry.delete()
+        return JsonResponse({'success': True})
+
     if request.user.role == 'staff':
         if not request.user.store:
             messages.error(request, "You are not assigned to any store.")
             return redirect('custom_login')
-
-        entries = GameData.objects.filter(
-            entry_source='customer_staff_entry',
-            staff=request.user
-        ).select_related('machine__store', 'staff').order_by('-id')[:100]
-
+        entries = GameData.objects.filter(entry_source='customer_staff_entry', staff=request.user).select_related('machine__store', 'staff').order_by('-id')[:100]
         stores = Store.objects.filter(pk=request.user.store.pk)
-
+        machines = Machine.objects.filter(store=request.user.store)
     elif request.user.is_superuser or request.user.role == 'superadmin':
-        entries = GameData.objects.filter(entry_source='customer_staff_entry') \
-                                  .select_related('machine__store', 'staff') \
-                                  .order_by('-id')[:100]
+        entries = GameData.objects.filter(entry_source='customer_staff_entry').select_related('machine__store', 'staff').order_by('-id')[:100]
         stores = Store.objects.all()
+        machines = Machine.objects.all()
     else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
+    now = timezone.now()
+    return render(request, 'customer_entries_list.html', {'entries': entries, 'stores': stores, 'machines': machines, 'now': now})
 
-    return render(request, 'customer_entries_list.html', {
-        'entries': entries,
-        'stores': stores
-    })
+@login_required
+def export_customer_entries_pdf(request):
+    bill_no = request.GET.get('bill_no', '').strip()
+    from_date = request.GET.get('from_date', '').strip()
+    to_date = request.GET.get('to_date', '').strip()
+
+    if request.user.role == 'staff':
+        queryset = GameData.objects.filter(entry_source='customer_staff_entry', staff=request.user)
+    elif request.user.is_superuser or request.user.role == 'superadmin':
+        queryset = GameData.objects.filter(entry_source='customer_staff_entry')
+    else:
+        return HttpResponse('Unauthorized', status=403)
+
+    if bill_no:
+        queryset = queryset.filter(bill_no__icontains=bill_no)
+
+    if from_date:
+        queryset = queryset.filter(date__gte=from_date)
+
+    if to_date:
+        queryset = queryset.filter(date__lte=to_date)
+
+    queryset = queryset.select_related('staff', 'machine__store').order_by('-id')
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="Customer_Entries.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4, rightMargin=8*mm, leftMargin=8*mm, topMargin=8*mm, bottomMargin=8*mm)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    title = Paragraph('<b>Customer Entries Report</b>', styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 5*mm))
+
+    filter_parts = []
+    if bill_no:
+        filter_parts.append(f"Bill No: {bill_no}")
+    if from_date:
+        filter_parts.append(f"From Date: {from_date}")
+    if to_date:
+        filter_parts.append(f"To Date: {to_date}")
+    if filter_parts:
+        elements.append(Paragraph(" | ".join(filter_parts), styles['Normal']))
+        elements.append(Spacer(1, 4*mm))
+
+    data = [['#', 'Staff', 'Customer', 'Machine', 'In', 'Out', 'Expense', 'Amount', 'Good Luck', 'Bill No', 'Date', 'Time']]
+
+    for index, entry in enumerate(queryset, 1):
+        machine_text = f"{entry.machine.name} - {entry.machine.number}" if entry.machine else "-"
+        data.append([index, entry.staff.username if entry.staff else '-', entry.customer_name, machine_text, entry.in_points, entry.out_points, entry.get_expense_type_display(), entry.expense_amt, entry.good_luck, entry.bill_no, entry.date.strftime('%Y-%m-%d'), entry.time.strftime('%H:%M:%S')])
+
+    if len(data) == 1:
+        data.append(['-', '-', 'No records found', '-', '-', '-', '-', '-', '-', '-', '-', '-'])
+
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.HexColor('#212529')), ('TEXTCOLOR', (0,0), (-1,0), colors.white), ('GRID', (0,0), (-1,-1), 0.5, colors.black), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 7), ('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4)]))
+    elements.append(table)
+
+    doc.build(elements)
+    return response

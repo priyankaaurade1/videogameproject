@@ -177,7 +177,7 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <span class="navbar-brand ms-2">{{ request.user.store.name|default:"VideoGame" }}</span>
+      <span class="navbar-brand ms-2">{{ request.user.username }}</span>
     </div>
   </nav>
 
@@ -205,7 +205,7 @@
         <li class="has-submenu">
           <a href="" class="menu-toggle">➕ Add Entries ▾</a>
           <ul class="submenu">
-            <li><a href="{% url 'staff_entry' %}">📝 Staff Entry</a></li>
+            <li><a href="{% url 'staff_entry' %}">📝 Reading Entry</a></li>
             <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
           </ul>
         </li>

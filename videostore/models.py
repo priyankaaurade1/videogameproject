@@ -49,6 +49,7 @@ class GameData(models.Model):
         choices=[('customer_staff_entry', 'Customer Entry')],
         default='customer_staff_entry'
     )
+    remarks = models.TextField(blank=True, null=True)
 
 class ReadingData(models.Model):
     staff = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={'role': 'staff'})
