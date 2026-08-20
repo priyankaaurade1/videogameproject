@@ -1,216 +1,391 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block page_title %}Staff entires{% endblock %}
+
+{% block page_title %}Staff Entries{% endblock %}
+
 {% block content %}
-  <style>
-    .container-box {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .form-wrapper {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
+
+<style>
+  .container-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .form-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+
+  .preview-wrapper {
+    flex: 0 0 38%;
+    background: #fff8e1;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    min-height: 400px;
+  }
+
+  .readonly-field[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-weight: 500;
+    cursor: not-allowed;
+  }
+
+  .content,
+  .card-body {
+    padding: 0 !important;
+  }
+
+  @media (max-width: 992px) {
+    .form-wrapper,
     .preview-wrapper {
-      flex: 0 0 38%;
-      background: #fff8e1;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
-      min-height: 400px;
+      flex: 100%;
+      margin-top: 20px;
     }
-    .readonly-field[readonly] {
-      background-color: #f8f9fa; 
-      color: #6c757d;           
-      font-weight: 500;
-      cursor: not-allowed;
+  }
+
+  @media (max-width: 576px) {
+    .container {
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
-    @media (max-width: 992px) {
-      .form-wrapper, .preview-wrapper {
-        flex: 100%;
-      }
-      .form-wrapper, .preview-wrapper {
-        margin-top: 20px;
-      }
+    h3 {
+      font-size: 20px;
     }
-  </style>
-  <style>
-  .content,.card-body  {
-    padding: 0px !important;
+
+    .form-label {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .form-control,
+    .form-select {
+      font-size: 14px;
+      padding: 8px;
+    }
+
+    .row.g-2 {
+      margin-left: -4px;
+      margin-right: -4px;
+    }
+
+    .row.g-2 > [class*="col-"] {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .btn {
+      font-size: 14px;
+    }
   }
 </style>
-<div class="container mt-4">
- {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-success auto-dismiss">{{ message }}</div>
-  {% endfor %}
-{% endif %}
 
-  <h3 class="text-center mb-3">🎮 Game Store - Reading Entry</h3>
+<div class="container mt-4">
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success auto-dismiss">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <h3 class="text-center mb-3">Reading Entry</h3>
+
   <div class="text-center mb-3">
     <strong>🧾 Reading No:</strong> {{ Reading_no }}
   </div>
+
   <form method="POST" enctype="multipart/form-data" id="entryForm">
-  {% csrf_token %}
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label class="form-label">Staff ID</label>
-      <input type="text" class="form-control readonly-field"
-             value="{{ request.user.username }}{% if request.user.store %} - {{ request.user.store.name }}{% endif %}"
-             readonly>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Date</label>
-      <input type="text" class="form-control readonly-field" value="{{ now|date:'Y-m-d' }}" readonly>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Time</label>
-      <input type="text" class="form-control readonly-field" value="{{ now|time:'H:i:s' }}" readonly>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Select Machine</label>
-      <select class="form-select" name="machine" required>
-        <option value="">-- Select Machine --</option>
-        {% for machine in machines %}
-          <option value="{{ machine.id }}"
-                  {% if entry and entry.machine.id == machine.id %}selected{% endif %}>
-            {{ machine.name }} - {{ machine.number }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
 
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label class="form-label">Reading 1</label>
-      <input type="number" class="form-control" name="reading_1" min="0" required
-             value="{{ entry.reading_1|default_if_none:'' }}">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Reading 2</label>
-      <input type="number" class="form-control" name="reading_2" min="0" required
-             value="{{ entry.reading_2|default_if_none:'' }}">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Reading 3</label>
-      <input type="number" class="form-control" name="reading_3" min="0" required
-             value="{{ entry.reading_3|default_if_none:'' }}">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Reading 4</label>
-      <input type="number" class="form-control" name="reading_4" min="0" required
-             value="{{ entry.reading_4|default_if_none:'' }}">
-    </div>
-  </div>
+    {% csrf_token %}
 
-  <div class="mb-3">
-    <label class="form-label">Photos (Take / Choose)</label>
-    <input type="file" id="photoInput" name="photos" accept="image/*"
-           capture="environment" multiple class="form-control mb-2">
-    <div id="photoPreview" class="d-flex flex-wrap gap-2"></div>
-  </div>
+    <!-- STAFF / DATE / TIME / MACHINE -->
+    <div class="row g-2 mb-3">
 
-{% if existing_photos %}
-  <div class="mb-3">
-    <label class="form-label">Existing Photos</label>
-    <div id="existingPhotoPreview" class="d-flex flex-wrap gap-2">
-      {% for photo in existing_photos %}
-        <div class="position-relative existing-photo" data-photo-id="{{ photo.id }}">
-          <img src="{{ photo.photo.url }}" class="rounded border" style="width:80px; height:80px; object-fit:cover;">
-          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-existing-btn">❌</button>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Staff ID</label>
+        <input type="text"
+               class="form-control readonly-field"
+               value="{{ request.user.username }}{% if request.user.store %} - {{ request.user.store.name }}{% endif %}"
+               readonly>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Date</label>
+        <input type="text"
+               class="form-control readonly-field"
+               value="{{ now|date:'Y-m-d' }}"
+               readonly>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Time</label>
+        <input type="text"
+               class="form-control readonly-field"
+               value="{{ now|time:'H:i:s' }}"
+               readonly>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Select Machine</label>
+        <select class="form-select"
+                name="machine"
+                required>
+
+          <option value="">-- Select Machine --</option>
+
+          {% for machine in machines %}
+            <option value="{{ machine.id }}"
+                    {% if entry and entry.machine.id == machine.id %}selected{% endif %}>
+              {{ machine.name }} - {{ machine.number }}
+            </option>
+          {% endfor %}
+
+        </select>
+      </div>
+
+    </div>
+
+
+    <!-- READINGS -->
+    <div class="row g-2 mb-3">
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Reading 1</label>
+        <input type="number"
+               class="form-control"
+               name="reading_1"
+               min="0"
+               required
+               value="{{ entry.reading_1|default_if_none:'' }}">
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Reading 2</label>
+        <input type="number"
+               class="form-control"
+               name="reading_2"
+               min="0"
+               required
+               value="{{ entry.reading_2|default_if_none:'' }}">
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Reading 3</label>
+        <input type="number"
+               class="form-control"
+               name="reading_3"
+               min="0"
+               required
+               value="{{ entry.reading_3|default_if_none:'' }}">
+      </div>
+
+      <div class="col-6 col-md-3">
+        <label class="form-label">Reading 4</label>
+        <input type="number"
+               class="form-control"
+               name="reading_4"
+               min="0"
+               required
+               value="{{ entry.reading_4|default_if_none:'' }}">
+      </div>
+
+    </div>
+
+
+    <!-- NEW PHOTOS -->
+    <div class="mb-3">
+
+      <label class="form-label">
+        Photos (Take / Choose)
+      </label>
+
+      <input type="file"
+             id="photoInput"
+             name="photos"
+             accept="image/*"
+             capture="environment"
+             multiple
+             class="form-control mb-2">
+
+      <div id="photoPreview"
+           class="d-flex flex-wrap gap-2">
+      </div>
+
+    </div>
+
+
+    <!-- EXISTING PHOTOS -->
+    {% if existing_photos %}
+
+      <div class="mb-3">
+
+        <label class="form-label">
+          Existing Photos
+        </label>
+
+        <div id="existingPhotoPreview"
+             class="d-flex flex-wrap gap-2">
+
+          {% for photo in existing_photos %}
+
+            <div class="position-relative existing-photo"
+                 data-photo-id="{{ photo.id }}">
+
+              <img src="{{ photo.photo.url }}"
+                   class="rounded border"
+                   style="width:80px;height:80px;object-fit:cover;">
+
+              <button type="button"
+                      class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-existing-btn">
+                ❌
+              </button>
+
+            </div>
+
+          {% endfor %}
+
         </div>
-      {% endfor %}
-    </div>
-  </div>
-{% endif %}
 
-<input type="hidden" name="delete_photos" id="deletePhotosField">
-  <div class="text-center">
-    <button type="submit" class="btn btn-primary px-4">
-      {% if entry %}💾 Update Data{% else %}💾 Save Data{% endif %}
-    </button>
-  </div>
-</form>
+      </div>
+
+    {% endif %}
+
+
+    <!-- DELETE PHOTO IDS -->
+    <input type="hidden"
+           name="delete_photos"
+           id="deletePhotosField">
+
+
+    <!-- SAVE / UPDATE -->
+    <div class="text-center">
+
+      <button type="submit"
+              class="btn btn-primary px-4">
+
+        {% if entry %}
+          💾 Update Data
+        {% else %}
+          💾 Save Data
+        {% endif %}
+
+      </button>
+
+    </div>
+
+  </form>
 
 </div>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // New photo preview
-  const photoInput = document.getElementById('photoInput');
-  const previewDiv = document.getElementById('photoPreview');
-  let photoFiles = [];
+    const photoInput = document.getElementById('photoInput');
+    const previewDiv = document.getElementById('photoPreview');
+    let photoFiles = [];
 
-  photoInput.addEventListener('change', function (event) {
-    for (let file of event.target.files) {
-      photoFiles.push(file);
-    }
-    renderPhotos();
-  });
-
-  function renderPhotos() {
-    previewDiv.innerHTML = '';
-    photoFiles.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'position-relative';
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'rounded border';
-        img.style.width = '80px';
-        img.style.height = '80px';
-        img.style.objectFit = 'cover';
-        wrapper.appendChild(img);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-        removeBtn.innerHTML = '❌';
-        removeBtn.onclick = () => {
-          if (confirm('Are you sure you want to remove this new photo?')) {
-            photoFiles.splice(index, 1);
-            renderPhotos();
-          }
-        };
-        wrapper.appendChild(removeBtn);
-
-        previewDiv.appendChild(wrapper);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // Existing photo deletion
-  const deletePhotosField = document.getElementById('deletePhotosField');
-  const existingPhotoPreview = document.getElementById('existingPhotoPreview');
-  let deletedPhotoIds = [];
-
-  if (existingPhotoPreview) {
-    existingPhotoPreview.addEventListener('click', function (e) {
-      if (e.target.classList.contains('remove-existing-btn')) {
-        const wrapper = e.target.closest('.existing-photo');
-        const photoId = wrapper.getAttribute('data-photo-id');
-        if (photoId) {
-          if (confirm('Are you sure you want to remove this existing photo?')) {
-            deletedPhotoIds.push(photoId);
-            deletePhotosField.value = deletedPhotoIds.join(',');
-            wrapper.remove();
-          }
+    photoInput.addEventListener('change', function (event) {
+        for (const file of event.target.files) {
+            photoFiles.push(file);
         }
-      }
+        updatePhotoInput();
+        renderPhotos();
     });
-  }
+
+    function updatePhotoInput() {
+        const dataTransfer = new DataTransfer();
+
+        photoFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+
+        photoInput.files = dataTransfer.files;
+    }
+
+    function renderPhotos() {
+        previewDiv.innerHTML = '';
+
+        photoFiles.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'position-relative';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'rounded border';
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover';
+
+                wrapper.appendChild(img);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
+                removeBtn.innerHTML = '❌';
+
+                removeBtn.onclick = function () {
+                    if (confirm('Are you sure you want to remove this new photo?')) {
+                        photoFiles.splice(index, 1);
+                        updatePhotoInput();
+                        renderPhotos();
+                    }
+                };
+
+                wrapper.appendChild(removeBtn);
+                previewDiv.appendChild(wrapper);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const deletePhotosField = document.getElementById('deletePhotosField');
+    const existingPhotoPreview = document.getElementById('existingPhotoPreview');
+    let deletedPhotoIds = [];
+
+    if (existingPhotoPreview) {
+        existingPhotoPreview.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-existing-btn')) {
+                const wrapper = e.target.closest('.existing-photo');
+                const photoId = wrapper.getAttribute('data-photo-id');
+
+                if (photoId) {
+                    if (confirm('Are you sure you want to remove this existing photo?')) {
+                        deletedPhotoIds.push(photoId);
+                        deletePhotosField.value = deletedPhotoIds.join(',');
+                        wrapper.remove();
+                    }
+                }
+            }
+        });
+    }
 });
-</script>
-<script>
-  setTimeout(function () {
-    document.querySelectorAll('.auto-dismiss').forEach(el => el.remove());
-  }, 3000); 
+
+
+/* ==========================================
+   AUTO DISMISS SUCCESS MESSAGE
+========================================== */
+
+setTimeout(function () {
+
+  document
+    .querySelectorAll('.auto-dismiss')
+    .forEach(function (el) {
+
+      el.remove();
+
+    });
+
+}, 3000);
+
 </script>
 
 {% endblock %}
