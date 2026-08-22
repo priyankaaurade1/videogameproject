@@ -303,18 +303,39 @@ def export_customer_entries(request):
     workbook.save(response)
     return response
 
+def generate_reading_no():
+    today = timezone.localdate()
+    prefix = today.strftime('%d%m%y')
+
+    last_entry = ReadingData.objects.filter(
+        reading_no__startswith=prefix,
+        entry_source='staff_entry'
+    ).order_by('-id').first()
+
+    if last_entry and last_entry.reading_no:
+        try:
+            last_number = int(last_entry.reading_no[-3:])
+            next_number = last_number + 1
+        except (ValueError, TypeError):
+            next_number = 1
+    else:
+        next_number = 1
+
+    return f"{prefix}{next_number:03d}"
+
 @login_required
 def staff_entry(request):
     user = request.user
 
-    # Staff can only see their store's machines
     if user.role == 'staff':
         if not user.store:
             messages.error(request, "You are not assigned to any store.")
             return redirect('custom_login')
         machines = Machine.objects.filter(store=user.store)
+
     elif user.is_superuser or user.role == 'superadmin':
         machines = Machine.objects.all()
+
     else:
         messages.error(request, "Unauthorized access.")
         return redirect('custom_login')
@@ -323,6 +344,7 @@ def staff_entry(request):
 
     if request.method == 'POST':
         machine_id = request.POST.get('machine')
+
         try:
             machine = Machine.objects.get(pk=machine_id) if machine_id else None
         except Machine.DoesNotExist:
@@ -336,7 +358,7 @@ def staff_entry(request):
         entry = ReadingData.objects.create(
             staff=user,
             machine=machine,
-            reading_no=generate_bill_no(),
+            reading_no=generate_reading_no(),
             reading_1=reading_1,
             reading_2=reading_2,
             reading_3=reading_3,
@@ -344,20 +366,31 @@ def staff_entry(request):
             entry_source='staff_entry'
         )
 
-        # Handle uploaded photos
         for photo in request.FILES.getlist('photos'):
-            ReadingDataPhoto.objects.create(reading_data=entry, photo=photo)
+            ReadingDataPhoto.objects.create(
+                reading_data=entry,
+                photo=photo
+            )
 
-        messages.success(request, "✅ Reading entry saved successfully!")
+        messages.success(
+            request,
+            "✅ Reading entry saved successfully!"
+        )
+
         return redirect('staff_entry')
 
     context = {
         'now': now,
         'machines': machines,
-        'Reading_no': generate_bill_no(),
+        'Reading_no': generate_reading_no(),
     }
-    return render(request, 'staff_entry.html', context)
 
+    return render(
+        request,
+        'staff_entry.html',
+        context
+    )
+    
 @login_required
 def customer_staff_entry(request):
     if request.user.role == 'staff':
@@ -432,48 +465,362 @@ def customer_staff_entry(request):
 
 @login_required
 def staff_entries(request):
-    selected_date = request.GET.get('date')
 
-    if selected_date:
-        date_filter = selected_date
-    else:
-        date_filter = timezone.localdate()
+    # ==============================
+    # DELETE
+    # ==============================
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+
+        entry_id = request.POST.get('entry_id')
+
+        entry = get_object_or_404(
+            ReadingData,
+            pk=entry_id,
+            entry_source='staff_entry'
+        )
+
+        # Staff can delete only their own entry
+        if request.user.role == 'staff' and entry.staff != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'Unauthorized'
+            }, status=403)
+
+        # Superadmin / superuser / owner can delete
+        if not (
+            request.user.is_superuser
+            or request.user.role == 'superadmin'
+            or entry.staff == request.user
+        ):
+            return JsonResponse({
+                'success': False,
+                'error': 'Unauthorized'
+            }, status=403)
+
+        entry.delete()
+
+        return JsonResponse({
+            'success': True
+        })
+
+
+    # ==============================
+    # GET FILTERS
+    # ==============================
+
+    selected_staff = request.GET.get('staff', '').strip()
+    selected_machine = request.GET.get('machine', '').strip()
+    reading_no = request.GET.get('reading_no', '').strip()
+
+    from_date = request.GET.get('from_date', '').strip()
+    to_date = request.GET.get('to_date', '').strip()
+
+
+    # ==============================
+    # USER ACCESS
+    # ==============================
 
     if request.user.role == 'staff':
+
         if not request.user.store:
-            messages.error(request, "You are not assigned to any store.")
+            messages.error(
+                request,
+                "You are not assigned to any store."
+            )
             return redirect('custom_login')
 
         entries = ReadingData.objects.filter(
             entry_source='staff_entry',
-            staff=request.user,
-            date=date_filter
+            staff=request.user
         )
 
-        stores = Store.objects.filter(pk=request.user.store.pk)
+        staff_users = User.objects.filter(
+            id=request.user.id
+        )
+
+        machines = Machine.objects.filter(
+            store=request.user.store
+        )
+
 
     elif request.user.is_superuser or request.user.role == 'superadmin':
 
         entries = ReadingData.objects.filter(
-            entry_source='staff_entry',
-            date=date_filter
+            entry_source='staff_entry'
         )
 
-        stores = Store.objects.all()
+        staff_users = User.objects.filter(
+            role='staff'
+        ).order_by('username')
+
+        machines = Machine.objects.select_related(
+            'store'
+        ).order_by('name', 'number')
+
 
     else:
-        messages.error(request, "Unauthorized access.")
+
+        messages.error(
+            request,
+            "Unauthorized access."
+        )
+
         return redirect('custom_login')
 
-    entries = entries.select_related('machine__store', 'staff')\
-                     .prefetch_related('photos')\
-                     .order_by('-id')[:100]
 
-    return render(request, 'staff_entries_list.html', {
-        'entries': entries,
-        'stores': stores,
-        'selected_date': selected_date or str(date_filter)
-    })
+    # ==============================
+    # DEFAULT DATE = TODAY
+    # ==============================
+
+    today = timezone.localdate()
+
+    if not from_date and not to_date:
+
+        from_date = str(today)
+        to_date = str(today)
+
+
+    # ==============================
+    # APPLY FILTERS
+    # ==============================
+
+    if selected_staff:
+
+        entries = entries.filter(
+            staff_id=selected_staff
+        )
+
+
+    if selected_machine:
+
+        entries = entries.filter(
+            machine_id=selected_machine
+        )
+
+
+    if reading_no:
+
+        entries = entries.filter(
+            reading_no__icontains=reading_no
+        )
+
+
+    if from_date:
+
+        entries = entries.filter(
+            date__gte=from_date
+        )
+
+
+    if to_date:
+
+        entries = entries.filter(
+            date__lte=to_date
+        )
+
+
+    # ==============================
+    # FINAL QUERY
+    # ==============================
+
+    entries = entries.select_related(
+        'staff',
+        'machine__store'
+    ).prefetch_related(
+        'photos'
+    ).order_by(
+        '-date',
+        '-time',
+        '-id'
+    )
+
+
+    # ==============================
+    # RENDER
+    # ==============================
+
+    return render(
+        request,
+        'staff_entries_list.html',
+        {
+            'entries': entries,
+            'staff_users': staff_users,
+            'machines': machines,
+
+            'selected_staff': selected_staff,
+            'selected_machine': selected_machine,
+            'reading_no': reading_no,
+
+            'from_date': from_date,
+            'to_date': to_date,
+
+            'today': today,
+        }
+    )
+
+@login_required
+def export_staff_entries_pdf(request):
+    selected_staff = request.GET.get('staff', '').strip()
+    selected_machine = request.GET.get('machine', '').strip()
+    reading_no = request.GET.get('reading_no', '').strip()
+    from_date = request.GET.get('from_date', '').strip()
+    to_date = request.GET.get('to_date', '').strip()
+
+    if request.user.role == 'staff':
+        queryset = ReadingData.objects.filter(
+            entry_source='staff_entry',
+            staff=request.user
+        )
+    elif request.user.is_superuser or request.user.role == 'superadmin':
+        queryset = ReadingData.objects.filter(
+            entry_source='staff_entry'
+        )
+    else:
+        return HttpResponse('Unauthorized', status=403)
+
+    if selected_staff:
+        queryset = queryset.filter(staff_id=selected_staff)
+
+    if selected_machine:
+        queryset = queryset.filter(machine_id=selected_machine)
+
+    if reading_no:
+        queryset = queryset.filter(reading_no__icontains=reading_no)
+
+    if from_date:
+        queryset = queryset.filter(date__gte=from_date)
+
+    if to_date:
+        queryset = queryset.filter(date__lte=to_date)
+
+    queryset = queryset.select_related(
+        'staff',
+        'machine__store'
+    ).prefetch_related(
+        'photos'
+    ).order_by('-id')
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="Machine_Entries.pdf"'
+
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        rightMargin=10 * mm,
+        leftMargin=10 * mm,
+        topMargin=10 * mm,
+        bottomMargin=10 * mm
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(
+        Paragraph(
+            '<b>Machine Reading Entries Report</b>',
+            styles['Title']
+        )
+    )
+
+    elements.append(Spacer(1, 5 * mm))
+
+    filter_parts = []
+
+    if selected_staff:
+        staff = User.objects.filter(pk=selected_staff).first()
+        if staff:
+            filter_parts.append(f"Staff: {staff.username}")
+
+    if selected_machine:
+        machine = Machine.objects.filter(pk=selected_machine).first()
+        if machine:
+            filter_parts.append(
+                f"Machine: {machine.name} - {machine.number}"
+            )
+
+    if reading_no:
+        filter_parts.append(f"Reading No: {reading_no}")
+
+    if from_date:
+        filter_parts.append(f"From Date: {from_date}")
+
+    if to_date:
+        filter_parts.append(f"To Date: {to_date}")
+
+    if filter_parts:
+        elements.append(
+            Paragraph(
+                " | ".join(filter_parts),
+                styles['Normal']
+            )
+        )
+        elements.append(Spacer(1, 4 * mm))
+
+    data = [[
+        '#',
+        'Staff',
+        'Machine',
+        'Reading No',
+        'Reading 1',
+        'Reading 2',
+        'Reading 3',
+        'Reading 4',
+        'Date',
+        'Time'
+    ]]
+
+    for index, entry in enumerate(queryset, 1):
+        machine_text = (
+            f"{entry.machine.name} - {entry.machine.number}"
+            if entry.machine else "-"
+        )
+
+        data.append([
+            index,
+            entry.staff.username if entry.staff else '-',
+            machine_text,
+            entry.reading_no,
+            entry.reading_1,
+            entry.reading_2,
+            entry.reading_3,
+            entry.reading_4,
+            entry.date.strftime('%Y-%m-%d'),
+            entry.time.strftime('%H:%M:%S')
+        ])
+
+    if len(data) == 1:
+        data.append([
+            '-',
+            '-',
+            '-',
+            'No records found',
+            '-',
+            '-',
+            '-',
+            '-',
+            '-',
+            '-'
+        ])
+
+    table = Table(data, repeatRows=1)
+
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#212529')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    return response
 
 @login_required
 def edit_staff_entry(request, entry_id):

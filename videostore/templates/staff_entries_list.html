@@ -1,192 +1,2240 @@
 {% extends 'base.html' %}
+
 {% load static %}
+
 {% block page_title %}All Machine Entries{% endblock %}
+
 {% block content %}
-<div class="container mt-4" >
-  <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="mb-0">All Machine Entries</h2>
-      <form method="get" id="dateForm" class="row g-2 align-items-center justify-content-end">
 
-    <div class="col-12 col-md-auto">
-        <input type="date" name="date" id="dateInput"
-               class="form-control"
-               value="{{ selected_date }}">
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================= */
+
+    .entries-page {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 5px 4px 25px;
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .entries-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 12px;
+
+        margin-bottom: 16px;
+    }
+
+
+    .entries-heading {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+    }
+
+
+    .entries-icon {
+        width: 42px;
+        height: 42px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: linear-gradient(
+            135deg,
+            #00bcd4,
+            #7040d9
+        );
+
+        color: #ffffff;
+
+        font-size: 19px;
+
+        flex-shrink: 0;
+    }
+
+
+    .entries-heading h2 {
+        margin: 0;
+
+        color: #151b2e;
+
+        font-size: 21px;
+
+        font-weight: 700;
+    }
+
+
+    .entries-heading p {
+        margin: 2px 0 0;
+
+        color: #7c8598;
+
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       FILTER CARD
+    ========================================================= */
+
+    .filter-card {
+
+        background: #ffffff;
+
+        border: 1px solid #e3e7ee;
+
+        border-radius: 10px;
+
+        padding: 15px;
+
+        margin-bottom: 14px;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    .filter-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #3f485b;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    .filter-control {
+
+        width: 100%;
+
+        height: 40px;
+
+        padding: 7px 9px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        color: #30374a;
+
+        font-size: 13px;
+    }
+
+
+    .filter-control:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    /* =========================================================
+       BUTTONS
+    ========================================================= */
+
+    .filter-btn,
+    .reset-btn,
+    .pdf-btn {
+
+        height: 40px;
+
+        border-radius: 7px;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+
+    .filter-btn {
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        border: none;
+
+        color: #ffffff;
+    }
+
+
+    .filter-btn:hover {
+
+        color: #ffffff;
+
+        opacity: 0.92;
+    }
+
+
+    .reset-btn {
+
+        background: #f1f3f6;
+
+        border: 1px solid #dfe3eb;
+
+        color: #4f586b;
+    }
+
+
+    .reset-btn:hover {
+
+        background: #e7eaf0;
+
+        color: #30374a;
+    }
+
+
+    .pdf-area {
+
+        margin-top: 10px;
+    }
+
+
+    .pdf-btn {
+
+        background: #dc3545;
+
+        border: none;
+
+        color: #ffffff;
+
+        padding: 7px 14px;
+    }
+
+
+    .pdf-btn:hover {
+
+        background: #c82333;
+
+        color: #ffffff;
+    }
+
+
+    /* =========================================================
+       TABLE CONTAINER
+    ========================================================= */
+
+    .table-card {
+
+        background: #ffffff;
+
+        border: 1px solid #e3e7ee;
+
+        border-radius: 10px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    .table-scroll {
+
+        width: 100%;
+
+        max-height: 70vh;
+
+        overflow-x: auto;
+
+        overflow-y: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .entries-table {
+
+        width: 100%;
+
+        min-width: 1100px;
+
+        margin: 0;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+        font-size: 13px;
+    }
+
+
+    .entries-table th {
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 5;
+
+        padding: 11px 10px;
+
+        background: #11182e;
+
+        color: #ffffff;
+
+        border-color: #2b3552;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        text-align: center;
+    }
+
+
+    .entries-table td {
+
+        padding: 9px 10px;
+
+        color: #3f4759;
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        vertical-align: middle;
+
+        white-space: nowrap;
+
+        text-align: center;
+
+        border-color: #e5e8ee;
+    }
+
+
+    .entries-table tbody tr:hover {
+
+        background: #f5fbfd;
+    }
+
+
+    .entries-table tbody tr:nth-child(even) {
+
+        background: #fafbfd;
+    }
+
+
+    .entries-table tbody tr:nth-child(even):hover {
+
+        background: #f3fafc;
+    }
+
+
+    /* =========================================================
+       READING NUMBERS
+    ========================================================= */
+
+    .reading-value {
+
+        color: #20263a;
+
+        font-weight: 700;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       PHOTO THUMBNAILS
+    ========================================================= */
+
+    .photo-thumb {
+
+        width: 38px;
+
+        height: 38px;
+
+        object-fit: cover;
+
+        border: 1px solid #d6dbe4;
+
+        border-radius: 6px;
+
+        margin: 2px;
+
+        cursor: pointer;
+    }
+
+
+    .photo-thumb:hover {
+
+        border-color: #00bcd4;
+
+        transform: scale(1.05);
+    }
+
+
+    /* =========================================================
+       ACTION BUTTONS
+    ========================================================= */
+
+    .action-btn {
+
+        width: 34px;
+
+        height: 34px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 0;
+
+        border-radius: 6px;
+
+        font-size: 13px;
+
+        margin: 1px;
+    }
+
+
+    /* =========================================================
+       PAGINATION
+    ========================================================= */
+
+    .pagination-area {
+
+        padding: 12px;
+
+        background: #ffffff;
+
+        border-top: 1px solid #e6e9ef;
+    }
+
+
+    .pagination {
+
+        margin: 0;
+    }
+
+
+    .pagination .page-link {
+
+        color: #46506a;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        border-color: #dfe3eb;
+
+        min-width: 34px;
+
+        text-align: center;
+    }
+
+
+    .pagination .active .page-link {
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        border-color: #00a8cc;
+
+        color: #ffffff;
+    }
+
+
+    /* =========================================================
+       MODAL
+    ========================================================= */
+
+    .entry-modal .modal-content {
+
+        border: none;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 15px 45px rgba(0, 0, 0, 0.18);
+    }
+
+
+    .entry-modal .modal-header {
+
+        background: #11182e;
+
+        color: #ffffff;
+
+        padding: 13px 16px;
+
+        border-bottom: 1px solid #27314d;
+    }
+
+
+    .entry-modal .modal-title {
+
+        font-size: 16px;
+
+        font-weight: 600;
+    }
+
+
+    .entry-modal .modal-body {
+
+        padding: 16px;
+    }
+
+
+    .detail-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #515a6e;
+
+        font-size: 11px;
+
+        font-weight: 600;
+    }
+
+
+    .detail-value {
+
+        min-height: 38px;
+
+        display: flex;
+
+        align-items: center;
+
+        padding: 7px 9px;
+
+        border: 1px solid #e1e5eb;
+
+        border-radius: 6px;
+
+        background: #f7f8fa;
+
+        color: #30374a;
+
+        font-size: 13px;
+
+        font-weight: 500;
+    }
+
+
+    .modal-photo {
+
+        width: 100px;
+
+        height: 100px;
+
+        object-fit: cover;
+
+        border-radius: 7px;
+
+        border: 1px solid #d9dee7;
+
+        margin: 4px;
+    }
+
+
+    .photos-title {
+
+        color: #3f4759;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        margin-bottom: 6px;
+    }
+
+
+    .entry-modal .modal-footer {
+
+        padding: 10px 16px;
+
+        border-top: 1px solid #e5e8ee;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 767.98px) {
+
+        .entries-page {
+
+            padding: 2px 2px 20px;
+        }
+
+
+        .entries-header {
+
+            margin-bottom: 12px;
+        }
+
+
+        .entries-icon {
+
+            width: 36px;
+
+            height: 36px;
+
+            font-size: 16px;
+        }
+
+
+        .entries-heading {
+
+            gap: 7px;
+        }
+
+
+        .entries-heading h2 {
+
+            font-size: 18px;
+        }
+
+
+        .entries-heading p {
+
+            display: none;
+        }
+
+
+        .filter-card {
+
+            padding: 11px;
+
+            border-radius: 9px;
+        }
+
+
+        .filter-label {
+
+            font-size: 11px;
+        }
+
+
+        .filter-control {
+
+            height: 39px;
+
+            font-size: 12px;
+
+            padding: 6px 7px;
+        }
+
+
+        .filter-btn,
+        .reset-btn,
+        .pdf-btn {
+
+            height: 39px;
+
+            font-size: 11px;
+        }
+
+
+        .pdf-area {
+
+            margin-top: 8px;
+        }
+
+
+        .pdf-btn {
+
+            width: 100%;
+        }
+
+
+        .table-card {
+
+            border-radius: 8px;
+        }
+
+
+        .table-scroll {
+
+            max-height: 65vh;
+        }
+
+
+        .entries-table {
+
+            min-width: 1050px;
+
+            font-size: 13px;
+        }
+
+
+        .entries-table th {
+
+            padding: 10px 9px;
+
+            font-size: 12px;
+        }
+
+
+        .entries-table td {
+
+            padding: 9px;
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+
+        .reading-value {
+
+            font-size: 13px;
+        }
+
+
+        .photo-thumb {
+
+            width: 36px;
+
+            height: 36px;
+        }
+
+
+        .action-btn {
+
+            width: 34px;
+
+            height: 34px;
+
+            font-size: 13px;
+        }
+
+
+        .pagination-area {
+
+            padding: 10px 5px;
+        }
+
+    }
+
+
+    /* =========================================================
+       SMALL PHONES
+    ========================================================= */
+
+    @media (max-width: 380px) {
+
+        .entries-heading h2 {
+
+            font-size: 17px;
+        }
+
+
+        .filter-card {
+
+            padding: 9px;
+        }
+
+
+        .filter-label {
+
+            font-size: 10px;
+        }
+
+
+        .filter-control {
+
+            font-size: 11px;
+        }
+
+
+        .entries-table th {
+
+            font-size: 11px;
+        }
+
+
+        .entries-table td {
+
+            font-size: 12px;
+        }
+
+    }
+
+</style>
+
+
+<div class="entries-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <div class="entries-header">
+
+        <div class="entries-heading">
+
+            <div class="entries-icon">
+
+                <i class="bi bi-table"></i>
+
+            </div>
+
+
+            <div>
+
+                <h2>
+                    All Machine Reading Entries
+                </h2>
+
+                <p>
+                    View, filter and manage machine readings
+                </p>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="col-6 col-md-auto">
-        <a href="{% url 'staff_entries' %}" class="btn btn-secondary w-100">
-            Reset
-        </a>
+
+
+    <!-- =====================================================
+         FILTERS
+    ===================================================== -->
+
+    <div class="filter-card">
+
+        <form
+            method="get"
+            action="{% url 'staff_entries' %}"
+            id="filterForm"
+        >
+
+            <div class="row g-2">
+
+
+                <!-- STAFF -->
+
+                <div class="col-6 col-md-2">
+
+                    <label class="filter-label">
+                        Staff
+                    </label>
+
+
+                    <select
+                        name="staff"
+                        id="filterStaff"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Staff
+                        </option>
+
+
+                        {% for staff in staff_users %}
+
+                            <option
+                                value="{{ staff.id }}"
+                                {% if selected_staff == staff.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ staff.username }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- MACHINE -->
+
+                <div class="col-6 col-md-2">
+
+                    <label class="filter-label">
+                        Machine
+                    </label>
+
+
+                    <select
+                        name="machine"
+                        id="filterMachine"
+                        class="filter-control"
+                    >
+
+                        <option value="">
+                            All Machines
+                        </option>
+
+
+                        {% for machine in machines %}
+
+                            <option
+                                value="{{ machine.id }}"
+                                {% if selected_machine == machine.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ machine.name }} -
+                                {{ machine.number }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- READING NUMBER -->
+
+                <div class="col-6 col-md-2">
+
+                    <label class="filter-label">
+                        Reading No.
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="reading_no"
+                        id="filterReadingNo"
+                        class="filter-control"
+                        placeholder="Reading No."
+                        value="{{ reading_no }}"
+                    >
+
+                </div>
+
+
+
+                <!-- FROM DATE -->
+
+                <div class="col-6 col-md-2">
+
+                    <label class="filter-label">
+                        From Date
+                    </label>
+
+
+                    <input
+                        type="date"
+                        name="from_date"
+                        id="filterFromDate"
+                        class="filter-control"
+                        value="{{ from_date }}"
+                    >
+
+                </div>
+
+
+
+                <!-- TO DATE -->
+
+                <div class="col-6 col-md-2">
+
+                    <label class="filter-label">
+                        To Date
+                    </label>
+
+
+                    <input
+                        type="date"
+                        name="to_date"
+                        id="filterToDate"
+                        class="filter-control"
+                        value="{{ to_date }}"
+                    >
+
+                </div>
+
+
+
+                <!-- RESET / FILTER -->
+
+                <div class="col-6 col-md-2 d-flex align-items-end gap-1">
+
+                    <a
+                        href="{% url 'staff_entries' %}"
+                        class="btn reset-btn w-100"
+                    >
+
+                        ↻ Reset
+
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="btn filter-btn w-100"
+                    >
+
+                        🔍 Filter
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+
+
+        <!-- PDF -->
+
+        <div class="pdf-area">
+
+            <button
+                type="button"
+                id="downloadPdf"
+                class="btn pdf-btn"
+            >
+
+                <i class="bi bi-file-earmark-pdf me-1"></i>
+
+                Download PDF
+
+            </button>
+
+        </div>
+
     </div>
 
-    <div class="col-6 col-md-auto">
-        <button type="submit"
-                formaction="{% url 'export_staff_entries' %}"
-                class="btn btn-success w-100">
-            📥 Excel
-        </button>
-    </div>
 
-</form>
-  </div>
-  <div id="printableArea" style="max-height: 80vh; overflow-y: auto;">
-    <table class="table table-bordered table-striped">
-      <thead class="table-dark">
-        <tr>
-          <th>#</th>
-          <th>Staff</th>
-            <th>Machine</th>
-            <th>Reading No</th>
-            <th>Reading 1</th>
-            <th>Reading 2</th>
-            <th>Reading 3</th>
-            <th>Reading 4</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Extra Photos</th>
-        </tr>
-      </thead>
-      <tbody  id="entriesTable">
-        {% for entry in entries %}
-        <tr id="entryRow-{{ entry.id }}" class="entry-row">
-          <td>{{ forloop.counter }}</td>
-          <td>{{ entry.staff.username }}</td>
-          <td>
-            {% if entry.machine %}
-              {{ entry.machine.name }} - {{ entry.machine.number }} ({{ entry.machine.store.name }})
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ entry.reading_no }}</td>
-            <td>{{ entry.reading_1 }}</td>
-            <td>{{ entry.reading_2 }}</td>
-            <td>{{ entry.reading_3 }}</td>
-            <td>{{ entry.reading_4 }}</td>
-            <td>{{ entry.date }}</td>
-            <td>{{ entry.time }}</td>
-          <td>
-            {% for photo in entry.photos.all %}
-              <img src="{{ photo.photo.url }}" 
-                  width="30" height="30"
-                  style="margin: 2px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px;">
-            {% endfor %}
-          </td>
-          <td>
-            <a href="{% url 'edit_staff_entry' entry.id %}" class="btn btn-sm btn-warning">✏️</a>
-          </td>
-          <td>
-            <button class="btn btn-secondary printBtn" data-entry-id="{{ entry.id }}">🖨️</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <nav>
-      <ul class="pagination justify-content-center mt-4" id="pagination"></ul>
-    </nav>
-  </div>
-</div>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const rowsPerPage = 10;
-    const rows = document.querySelectorAll('.entry-row');
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
-    const pagination = document.getElementById('pagination');
 
-    function showPage(page) {
-      rows.forEach((row, index) => {
-        row.style.display = (index >= (page - 1) * rowsPerPage && index < page * rowsPerPage) ? '' : 'none';
-      });
-    }
-    function createPaginationButtons() {
-      pagination.innerHTML = '';
+    <!-- =====================================================
+         TABLE
+    ===================================================== -->
 
-      for (let i = 1; i <= totalPages; i++) {
-        const li = document.createElement('li');
-        li.className = 'page-item';
-        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-        li.addEventListener('click', function (e) {
-          e.preventDefault();
-          showPage(i);
-          document.querySelectorAll('.page-item').forEach(item => item.classList.remove('active'));
-          li.classList.add('active');
-        });
-        pagination.appendChild(li);
-      }
-      if (pagination.firstChild) pagination.firstChild.classList.add('active');
-    }
-    // Initialize
-    if (rows.length > 0) {
-      createPaginationButtons();
-      showPage(1);
-    }
-  });
-</script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const printButtons = document.querySelectorAll('.printBtn');
+    <div class="table-card">
 
-    printButtons.forEach(button => {
-      button.addEventListener('click', function () {
-        const entryId = this.getAttribute('data-entry-id');
-        const row = document.getElementById(`entryRow-${entryId}`);
-        const clonedRow = row.cloneNode(true);
-        // Remove photo and print cells (indexes 11 and 12)
-        clonedRow.removeChild(clonedRow.children[12]); // Print button
-        clonedRow.removeChild(clonedRow.children[11]); // Photo
-        const newWindow = window.open('', '', 'height=600,width=800');
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>Print Entry</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 13px; }
-                th { background-color: #f2f2f2; }
-              </style>
-            </head>
-            <body>
-              <h3 style="text-align:center; margin-bottom: 20px;">Game Entry Report</h3>
-              <table>
+        <div
+            id="printableArea"
+            class="table-scroll"
+        >
+
+            <table
+                class="table table-bordered entries-table"
+            >
+
                 <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Staff</th>
-                    <th>Customer</th>
-                    <th>Machine</th>
-                    <th>In</th>
-                    <th>Out</th>
-                    <th>Expense</th>
-                    <th>Amount</th>
-                    <th>Bill No</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${clonedRow.innerHTML}
-                </tbody>
-              </table>
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-        newWindow.focus();
-        newWindow.print();
-        newWindow.close();
-      });
-    });
-  });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const dateInput = document.getElementById('dateInput');
 
-    dateInput.addEventListener('change', function () {
-        document.getElementById('dateForm').submit();
-    });
-});
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Staff</th>
+
+                        <th>Machine</th>
+
+                        <th>Reading No</th>
+
+                        <th>Reading 1</th>
+
+                        <th>Reading 2</th>
+
+                        <th>Reading 3</th>
+
+                        <th>Reading 4</th>
+
+                        <th>Date</th>
+
+                        <th>Time</th>
+
+                        <th>Photos</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="entriesTable">
+
+                    {% for entry in entries %}
+
+                        <tr
+                            id="entryRow-{{ entry.id }}"
+                            class="entry-row"
+                        >
+
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+
+                            <td>
+                                {{ entry.staff.username }}
+                            </td>
+
+
+                            <td>
+
+                                {% if entry.machine %}
+
+                                    {{ entry.machine.name }} -
+                                    {{ entry.machine.number }}
+
+                                    ({{ entry.machine.store.name }})
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ entry.reading_no }}
+                                </strong>
+
+                            </td>
+
+
+                            <td class="reading-value">
+                                {{ entry.reading_1 }}
+                            </td>
+
+
+                            <td class="reading-value">
+                                {{ entry.reading_2 }}
+                            </td>
+
+
+                            <td class="reading-value">
+                                {{ entry.reading_3 }}
+                            </td>
+
+
+                            <td class="reading-value">
+                                {{ entry.reading_4 }}
+                            </td>
+
+
+                            <td>
+                                {{ entry.date }}
+                            </td>
+
+
+                            <td>
+                                {{ entry.time }}
+                            </td>
+
+
+                            <!-- PHOTOS -->
+
+                            <td>
+
+                                {% for photo in entry.photos.all %}
+
+                                    <img
+                                        src="{{ photo.photo.url }}"
+                                        class="photo-thumb"
+                                        alt="Entry photo"
+                                    >
+
+                                {% empty %}
+
+                                    -
+
+                                {% endfor %}
+
+                            </td>
+
+
+                            <!-- ACTIONS -->
+
+                            <td class="text-nowrap">
+
+
+                                <!-- VIEW -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-info action-btn viewBtn"
+                                    data-entry-id="{{ entry.id }}"
+                                    title="View"
+                                >
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+
+
+                                <!-- EDIT -->
+
+                                <a
+                                    href="{% url 'edit_staff_entry' entry.id %}"
+                                    class="btn btn-warning action-btn"
+                                    title="Edit"
+                                >
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </a>
+
+
+
+                                <!-- DELETE -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-danger action-btn deleteBtn"
+                                    data-entry-id="{{ entry.id }}"
+                                    title="Delete"
+                                >
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="12"
+                                class="text-center text-muted py-4"
+                            >
+
+                                No machine entries found for the selected filters.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- =================================================
+             PAGINATION
+        ================================================= -->
+
+        <div class="pagination-area">
+
+            <nav>
+
+                <ul
+                    class="pagination justify-content-center"
+                    id="pagination"
+                >
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     VIEW MODAL
+========================================================= -->
+
+<div
+    class="modal fade entry-modal"
+    id="viewModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+
+            <!-- HEADER -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    <i class="bi bi-eye me-2"></i>
+
+                    Machine Entry
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+
+
+            <!-- BODY -->
+
+            <div class="modal-body">
+
+                <div class="row g-2">
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Staff
+                        </span>
+
+                        <div
+                            id="viewStaff"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Machine
+                        </span>
+
+                        <div
+                            id="viewMachine"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Reading No.
+                        </span>
+
+                        <div
+                            id="viewReadingNo"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Date
+                        </span>
+
+                        <div
+                            id="viewDate"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Time
+                        </span>
+
+                        <div
+                            id="viewTime"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Reading 1
+                        </span>
+
+                        <div
+                            id="viewReading1"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Reading 2
+                        </span>
+
+                        <div
+                            id="viewReading2"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Reading 3
+                        </span>
+
+                        <div
+                            id="viewReading3"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Reading 4
+                        </span>
+
+                        <div
+                            id="viewReading4"
+                            class="detail-value"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <hr>
+
+
+                <div class="photos-title">
+
+                    <i class="bi bi-images me-1"></i>
+
+                    Photos
+
+                </div>
+
+
+                <div
+                    id="viewPhotos"
+                    class="d-flex flex-wrap"
+                ></div>
+
+            </div>
+
+
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    data-bs-dismiss="modal"
+                >
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+
+        /* =====================================================
+           PAGINATION
+        ===================================================== */
+
+        const rowsPerPage = 10;
+
+
+        const rows =
+            Array.from(
+                document.querySelectorAll(
+                    '.entry-row'
+                )
+            );
+
+
+        const pagination =
+            document.getElementById(
+                'pagination'
+            );
+
+
+        function showPage(page) {
+
+
+            rows.forEach(
+                function (row, index) {
+
+
+                    const start =
+                        (page - 1) *
+                        rowsPerPage;
+
+
+                    const end =
+                        page *
+                        rowsPerPage;
+
+
+                    if (
+                        index >= start &&
+                        index < end
+                    ) {
+
+                        row.style.display =
+                            '';
+
+                    }
+
+                    else {
+
+                        row.style.display =
+                            'none';
+
+                    }
+
+                }
+            );
+
+        }
+
+
+
+        function createPaginationButtons() {
+
+
+            pagination.innerHTML =
+                '';
+
+
+            const totalPages =
+                Math.ceil(
+                    rows.length /
+                    rowsPerPage
+                );
+
+
+            for (
+                let i = 1;
+                i <= totalPages;
+                i++
+            ) {
+
+
+                const li =
+                    document.createElement(
+                        'li'
+                    );
+
+
+                li.className =
+                    'page-item';
+
+
+                li.innerHTML =
+                    `<a class="page-link" href="#">${i}</a>`;
+
+
+                li.addEventListener(
+                    'click',
+                    function (e) {
+
+
+                        e.preventDefault();
+
+
+                        showPage(i);
+
+
+                        document
+                            .querySelectorAll(
+                                '#pagination .page-item'
+                            )
+                            .forEach(
+                                function (item) {
+
+                                    item.classList
+                                        .remove(
+                                            'active'
+                                        );
+
+                                }
+                            );
+
+
+                        li.classList.add(
+                            'active'
+                        );
+
+                    }
+                );
+
+
+                pagination.appendChild(
+                    li
+                );
+
+            }
+
+
+            if (pagination.firstChild) {
+
+                pagination.firstChild
+                    .classList.add(
+                        'active'
+                    );
+
+            }
+
+        }
+
+
+        if (rows.length > 0) {
+
+            createPaginationButtons();
+
+            showPage(1);
+
+        }
+
+
+
+        /* =====================================================
+           ENTRY DATA
+        ===================================================== */
+
+        const entries = {
+
+            {% for entry in entries %}
+
+            "{{ entry.id }}": {
+
+                staff:
+                    "{{ entry.staff.username|escapejs }}",
+
+                machine:
+                    "{% if entry.machine %}{{ entry.machine.name|escapejs }} - {{ entry.machine.number|escapejs }} ({{ entry.machine.store.name|escapejs }}){% else %}-{% endif %}",
+
+                reading_no:
+                    "{{ entry.reading_no|escapejs }}",
+
+                reading_1:
+                    "{{ entry.reading_1 }}",
+
+                reading_2:
+                    "{{ entry.reading_2 }}",
+
+                reading_3:
+                    "{{ entry.reading_3 }}",
+
+                reading_4:
+                    "{{ entry.reading_4 }}",
+
+                date:
+                    "{{ entry.date|date:'Y-m-d' }}",
+
+                time:
+                    "{{ entry.time|time:'H:i:s' }}",
+
+                photos: [
+
+                    {% for photo in entry.photos.all %}
+
+                    "{{ photo.photo.url|escapejs }}"
+
+                    {% if not forloop.last %},{% endif %}
+
+                    {% endfor %}
+
+                ]
+
+            }
+
+            {% if not forloop.last %},{% endif %}
+
+            {% endfor %}
+
+        };
+
+
+
+        /* =====================================================
+           VIEW BUTTON
+        ===================================================== */
+
+        document
+            .querySelectorAll(
+                '.viewBtn'
+            )
+            .forEach(
+                function (button) {
+
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+
+                            const entryId =
+                                this.getAttribute(
+                                    'data-entry-id'
+                                );
+
+
+                            const entry =
+                                entries[
+                                    entryId
+                                ];
+
+
+                            if (!entry) {
+
+                                return;
+
+                            }
+
+
+                            document
+                                .getElementById(
+                                    'viewStaff'
+                                )
+                                .textContent =
+                                entry.staff;
+
+
+                            document
+                                .getElementById(
+                                    'viewMachine'
+                                )
+                                .textContent =
+                                entry.machine;
+
+
+                            document
+                                .getElementById(
+                                    'viewReadingNo'
+                                )
+                                .textContent =
+                                entry.reading_no;
+
+
+                            document
+                                .getElementById(
+                                    'viewDate'
+                                )
+                                .textContent =
+                                entry.date;
+
+
+                            document
+                                .getElementById(
+                                    'viewTime'
+                                )
+                                .textContent =
+                                entry.time;
+
+
+                            document
+                                .getElementById(
+                                    'viewReading1'
+                                )
+                                .textContent =
+                                entry.reading_1;
+
+
+                            document
+                                .getElementById(
+                                    'viewReading2'
+                                )
+                                .textContent =
+                                entry.reading_2;
+
+
+                            document
+                                .getElementById(
+                                    'viewReading3'
+                                )
+                                .textContent =
+                                entry.reading_3;
+
+
+                            document
+                                .getElementById(
+                                    'viewReading4'
+                                )
+                                .textContent =
+                                entry.reading_4;
+
+
+
+                            /* PHOTOS */
+
+                            const photos =
+                                document.getElementById(
+                                    'viewPhotos'
+                                );
+
+
+                            photos.innerHTML =
+                                '';
+
+
+                            if (
+                                entry.photos &&
+                                entry.photos.length > 0
+                            ) {
+
+
+                                entry.photos.forEach(
+                                    function (photo) {
+
+
+                                        const img =
+                                            document.createElement(
+                                                'img'
+                                            );
+
+
+                                        img.src =
+                                            photo;
+
+
+                                        img.className =
+                                            'modal-photo';
+
+
+                                        img.alt =
+                                            'Entry photo';
+
+
+                                        photos.appendChild(
+                                            img
+                                        );
+
+                                    }
+                                );
+
+                            }
+
+                            else {
+
+                                photos.innerHTML =
+                                    '<span class="text-muted">No photos</span>';
+
+                            }
+
+
+
+                            /* SHOW MODAL */
+
+                            const modal =
+                                new bootstrap.Modal(
+                                    document.getElementById(
+                                        'viewModal'
+                                    )
+                                );
+
+
+                            modal.show();
+
+                        }
+                    );
+
+                }
+            );
+
+
+
+        /* =====================================================
+           DELETE
+        ===================================================== */
+
+        document
+            .querySelectorAll(
+                '.deleteBtn'
+            )
+            .forEach(
+                function (button) {
+
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+
+                            const entryId =
+                                this.getAttribute(
+                                    'data-entry-id'
+                                );
+
+
+                            if (
+                                !confirm(
+                                    'Are you sure you want to delete this entry? This action cannot be undone.'
+                                )
+                            ) {
+
+                                return;
+
+                            }
+
+
+                            const formData =
+                                new FormData();
+
+
+                            formData.append(
+                                'action',
+                                'delete'
+                            );
+
+
+                            formData.append(
+                                'entry_id',
+                                entryId
+                            );
+
+
+                            formData.append(
+                                'csrfmiddlewaretoken',
+                                '{{ csrf_token }}'
+                            );
+
+
+                            fetch(
+                                "{% url 'staff_entries' %}",
+                                {
+                                    method: 'POST',
+
+                                    headers: {
+                                        'X-Requested-With':
+                                            'XMLHttpRequest'
+                                    },
+
+                                    body:
+                                        formData
+                                }
+                            )
+
+                            .then(
+                                function (response) {
+
+                                    return response.json();
+
+                                }
+                            )
+
+                            .then(
+                                function (data) {
+
+
+                                    if (
+                                        data.success
+                                    ) {
+
+
+                                        const row =
+                                            document.getElementById(
+                                                'entryRow-' +
+                                                entryId
+                                            );
+
+
+                                        if (row) {
+
+                                            row.remove();
+
+                                        }
+
+
+                                        alert(
+                                            'Entry deleted successfully.'
+                                        );
+
+
+                                        window.location.reload();
+
+                                    }
+
+                                    else {
+
+                                        alert(
+                                            'Failed to delete entry: ' +
+                                            (
+                                                data.error ||
+                                                'Unknown error'
+                                            )
+                                        );
+
+                                    }
+
+                                }
+                            )
+
+                            .catch(
+                                function (error) {
+
+
+                                    console.error(
+                                        error
+                                    );
+
+
+                                    alert(
+                                        'Failed to delete entry.'
+                                    );
+
+                                }
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+
+        /* =====================================================
+           PDF DOWNLOAD
+        ===================================================== */
+
+        document
+            .getElementById(
+                'downloadPdf'
+            )
+            .addEventListener(
+                'click',
+                function () {
+
+
+                    const params =
+                        new URLSearchParams();
+
+
+                    const staff =
+                        document
+                            .getElementById(
+                                'filterStaff'
+                            )
+                            .value;
+
+
+                    const machine =
+                        document
+                            .getElementById(
+                                'filterMachine'
+                            )
+                            .value;
+
+
+                    const readingNo =
+                        document
+                            .getElementById(
+                                'filterReadingNo'
+                            )
+                            .value
+                            .trim();
+
+
+                    const fromDate =
+                        document
+                            .getElementById(
+                                'filterFromDate'
+                            )
+                            .value;
+
+
+                    const toDate =
+                        document
+                            .getElementById(
+                                'filterToDate'
+                            )
+                            .value;
+
+
+
+                    if (staff) {
+
+                        params.append(
+                            'staff',
+                            staff
+                        );
+
+                    }
+
+
+                    if (machine) {
+
+                        params.append(
+                            'machine',
+                            machine
+                        );
+
+                    }
+
+
+                    if (readingNo) {
+
+                        params.append(
+                            'reading_no',
+                            readingNo
+                        );
+
+                    }
+
+
+                    if (fromDate) {
+
+                        params.append(
+                            'from_date',
+                            fromDate
+                        );
+
+                    }
+
+
+                    if (toDate) {
+
+                        params.append(
+                            'to_date',
+                            toDate
+                        );
+
+                    }
+
+
+                    window.location.href =
+                        "{% url 'export_staff_entries_pdf' %}?" +
+                        params.toString();
+
+                }
+            );
+
+
+
+        /* =====================================================
+           READING NUMBER ENTER
+        ===================================================== */
+
+        document
+            .getElementById(
+                'filterReadingNo'
+            )
+            .addEventListener(
+                'keypress',
+                function (event) {
+
+
+                    if (
+                        event.key ===
+                        'Enter'
+                    ) {
+
+
+                        event.preventDefault();
+
+
+                        document
+                            .getElementById(
+                                'filterForm'
+                            )
+                            .submit();
+
+                    }
+
+                }
+            );
+
+    }
+);
+
 </script>
+
 {% endblock %}

@@ -1,97 +1,597 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Login - Lottery Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <title>Login</title>
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #bbdefb, #64b5f6);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Segoe UI", sans-serif;
-    }
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      background: #fff;
-      border-radius: 15px;
-      padding: 30px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      animation: slideIn 0.5s ease;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .login-title {
-      text-align: center;
-      font-size: 26px;
-      font-weight: 700;
-      color: #1976d2;
-      margin-bottom: 25px;
-    }
-    .form-label {
-      font-weight: 600;
-    }
-    .btn-primary {
-      background-color: #1976d2;
-      border-color: #1976d2;
-    }
-    .btn-primary:hover {
-      background-color: #125ea3;
-    }
-    .alert {
-      font-size: 14px;
-      padding: 8px 12px;
-    }
-    .bi-lock-fill {
-      font-size: 28px;
-      color: #1976d2;
-      margin-bottom: 8px;
-    }
-  </style>
+    <!-- Bootstrap 5 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-family: "Segoe UI", Arial, sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(0, 212, 255, 0.15),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(124, 58, 237, 0.18),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #070b17 0%,
+                    #10162b 50%,
+                    #080c18 100%
+                );
+
+            color: #ffffff;
+
+            overflow-x: hidden;
+            position: relative;
+        }
+
+
+        /* Background glow */
+
+        body::before {
+            content: "";
+            position: fixed;
+
+            width: 300px;
+            height: 300px;
+
+            border-radius: 50%;
+
+            background: rgba(0, 212, 255, 0.08);
+
+            filter: blur(90px);
+
+            top: -100px;
+            left: -100px;
+
+            pointer-events: none;
+        }
+
+
+        body::after {
+            content: "";
+            position: fixed;
+
+            width: 350px;
+            height: 350px;
+
+            border-radius: 50%;
+
+            background: rgba(124, 58, 237, 0.10);
+
+            filter: blur(100px);
+
+            bottom: -150px;
+            right: -120px;
+
+            pointer-events: none;
+        }
+
+
+        /* Login card */
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+
+            margin: 20px;
+
+            padding: 38px 35px;
+
+            background: rgba(15, 21, 40, 0.95);
+
+            border: 1px solid rgba(0, 212, 255, 0.25);
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 0 30px rgba(0, 212, 255, 0.10),
+                0 20px 60px rgba(0, 0, 0, 0.55);
+
+            position: relative;
+            z-index: 2;
+
+            animation: slideIn 0.5s ease;
+        }
+
+
+        @keyframes slideIn {
+
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* Game icon */
+
+        .game-icon {
+            width: 78px;
+            height: 78px;
+
+            margin: 0 auto 18px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00bcd4,
+                    #6c3cff
+                );
+
+            box-shadow:
+                0 0 20px rgba(0, 212, 255, 0.30),
+                0 0 35px rgba(108, 60, 255, 0.20);
+        }
+
+
+        .game-icon i {
+            font-size: 40px;
+            color: #ffffff;
+        }
+
+
+        /* Title */
+
+        .login-title {
+            text-align: center;
+
+            font-size: 28px;
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            margin-bottom: 6px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #00d4ff,
+                    #9b6cff
+                );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+
+        .login-subtitle {
+            text-align: center;
+
+            color: #8c96b3;
+
+            font-size: 14px;
+
+            margin-bottom: 30px;
+        }
+
+
+        /* Form labels */
+
+        .form-label {
+            color: #dce3f7;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 8px;
+        }
+
+
+        /* Input group */
+
+        .input-group-text {
+            min-width: 48px;
+
+            justify-content: center;
+
+            background: #0b1020;
+
+            border: 1px solid #293452;
+
+            border-right: none;
+
+            color: #00d4ff;
+        }
+
+
+        .form-control {
+            height: 48px;
+
+            background: #0b1020;
+
+            border: 1px solid #293452;
+
+            border-left: none;
+
+            color: #ffffff;
+
+            font-size: 15px;
+        }
+
+
+        .form-control::placeholder {
+            color: #66708d;
+        }
+
+
+        .form-control:focus {
+            background: #0b1020;
+
+            color: #ffffff;
+
+            border-color: #00d4ff;
+
+            box-shadow:
+                0 0 0 0.15rem rgba(0, 212, 255, 0.10),
+                0 0 12px rgba(0, 212, 255, 0.10);
+        }
+
+
+        .input-group:focus-within .input-group-text {
+            border-color: #00d4ff;
+
+            color: #00d4ff;
+        }
+
+
+        /* Login button */
+
+        .btn-login {
+            width: 100%;
+
+            height: 50px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #00a8cc,
+                    #7040d9
+                );
+
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.6px;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .btn-login:hover {
+            color: #ffffff;
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 8px 25px rgba(0, 212, 255, 0.25);
+        }
+
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+
+        /* Django error message */
+
+        .alert {
+            font-size: 14px;
+
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            background: rgba(220, 53, 69, 0.12);
+
+            border: 1px solid rgba(220, 53, 69, 0.35);
+
+            color: #ff9da7;
+        }
+
+
+        /* Footer */
+
+        .login-footer {
+            text-align: center;
+
+            margin-top: 24px;
+
+            color: #626c88;
+
+            font-size: 12px;
+        }
+
+
+        .login-footer i {
+            color: #00d4ff;
+
+            margin-right: 4px;
+        }
+
+
+        /* Tablet */
+
+        @media (max-width: 576px) {
+
+            body {
+                align-items: center;
+
+                padding: 15px;
+            }
+
+            .login-card {
+                max-width: 100%;
+
+                margin: 0;
+
+                padding: 32px 25px;
+
+                border-radius: 18px;
+            }
+
+            .game-icon {
+                width: 70px;
+                height: 70px;
+
+                border-radius: 18px;
+            }
+
+            .game-icon i {
+                font-size: 35px;
+            }
+
+            .login-title {
+                font-size: 25px;
+            }
+
+            .login-subtitle {
+                font-size: 13px;
+
+                margin-bottom: 25px;
+            }
+        }
+
+
+        /* Small mobile phones */
+
+        @media (max-width: 380px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .login-card {
+                padding: 28px 18px;
+            }
+
+            .game-icon {
+                width: 64px;
+                height: 64px;
+
+                margin-bottom: 14px;
+            }
+
+            .game-icon i {
+                font-size: 32px;
+            }
+
+            .login-title {
+                font-size: 23px;
+            }
+
+            .form-control {
+                height: 46px;
+
+                font-size: 14px;
+            }
+
+            .input-group-text {
+                min-width: 44px;
+            }
+
+            .btn-login {
+                height: 48px;
+
+                font-size: 14px;
+            }
+        }
+
+    </style>
+
 </head>
+
+
 <body>
 
-  <div class="login-card">
-    <div class="text-center">
-      <i class="bi bi-lock-fill"></i>
-      <div class="login-title">Login</div>
+    <div class="login-card">
+
+        <!-- Game Icon -->
+
+        <div class="text-center">
+
+            <div class="game-icon">
+                <i class="bi bi-controller"></i>
+            </div>
+
+            <div class="login-title">
+                Login
+            </div>
+        </div>
+
+
+        <!-- Django Messages -->
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div
+                    class="alert text-center mb-3"
+                    role="alert"
+                >
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+
+        <!-- Login Form -->
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- Username -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Username
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        required
+                        autocomplete="username"
+                        placeholder="Enter your username"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+                    Password
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-key-fill"></i>
+                    </span>
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required
+                        autocomplete="current-password"
+                        placeholder="Enter your password"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Login Button -->
+
+            <div class="d-grid">
+
+                <button
+                    type="submit"
+                    class="btn btn-login"
+                >
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    LOGIN
+                </button>
+
+            </div>
+
+        </form>
+
+
     </div>
 
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-danger text-center" role="alert">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endif %}
 
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" name="username" class="form-control" required placeholder="Enter your username">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" required placeholder="Enter your password">
-      </div>
-      <div class="d-grid">
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-box-arrow-in-right me-1"></i> Login
-        </button>
-      </div>
-    </form>
-  </div>
+    <!-- Bootstrap JS -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
 
 </body>
+
 </html>

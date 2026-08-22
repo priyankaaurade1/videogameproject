@@ -20,6 +20,7 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='custom_logout'),
     path('forbidden/', lambda request: render(request, 'forbidden.html'), name='forbidden'),
     path('export/customer/pdf/', views.export_customer_entries_pdf, name='export_customer_entries_pdf'),
+    path('export/staff/pdf/', views.export_staff_entries_pdf, name='export_staff_entries_pdf'),
 ] 
 
 if settings.DEBUG:

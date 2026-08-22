@@ -1,295 +1,1189 @@
 {% extends 'base.html' %}
+
 {% load static %}
-{% block page_title %}Customer entires{% endblock %}
+
+{% block page_title %}Customer Entries{% endblock %}
+
 {% block content %}
 
-  <style>
-    .container-box {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .form-wrapper {
-      flex: 0 0 60%;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    .preview-wrapper {
-      flex: 0 0 38%;
-      background: #fff8e1;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
-      min-height: 400px;
-    }
-    .readonly-field[readonly] {
-      background-color: #f8f9fa; 
-      color: #6c757d;           
-      font-weight: 500;
-      cursor: not-allowed;
-    }
+<style>
 
-    @media (max-width: 992px) {
-      .form-wrapper, .preview-wrapper {
-        flex: 100%;
-      }
-    }
-  </style>
-  <style>
-    /* Mobile: make data-entry fields 2 columns */
-@media (max-width: 575.98px) {
+    /* =========================================================
+       CLEAN CUSTOMER ENTRY PAGE
+    ========================================================= */
 
-    .form-wrapper {
-        padding: 12px;
-    }
-
-    .form-wrapper .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 10px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .form-wrapper .row > [class*="col-"] {
+    .customer-entry-page {
         width: 100%;
-        padding-left: 0;
-        padding-right: 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 5px 3px 25px;
     }
 
-    .form-label {
-        font-size: 12px;
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .customer-entry-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 10px;
+
+        margin-bottom: 14px;
+    }
+
+
+    .customer-entry-heading {
+        display: flex;
+        align-items: center;
+
+        gap: 8px;
+    }
+
+
+    .customer-entry-icon {
+        width: 40px;
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: linear-gradient(
+            135deg,
+            #00bcd4,
+            #7040d9
+        );
+
+        color: #ffffff;
+
+        font-size: 18px;
+    }
+
+
+    .customer-entry-heading h3 {
+        margin: 0;
+
+        color: #151b2e;
+
+        font-size: 20px;
+
+        font-weight: 700;
+    }
+
+
+    .bill-number {
+        padding: 7px 9px;
+
+        border-radius: 7px;
+
+        background: #f1fbfd;
+
+        border: 1px solid #d5f1f5;
+
+        color: #008ca3;
+
+        font-size: 10px;
+
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       FORM
+    ========================================================= */
+
+    .customer-form {
+        background: #ffffff;
+
+        border: 1px solid #e4e8ef;
+
+        border-radius: 10px;
+
+        padding: 16px;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    /* =========================================================
+       LABEL
+    ========================================================= */
+
+    .customer-label {
+        display: block;
+
         margin-bottom: 4px;
+
+        color: #424a5d;
+
+        font-size: 12px;
+
+        font-weight: 600;
     }
 
-    .form-control,
-    .form-select {
-        font-size: 13px;
-        padding: 7px 8px;
-        min-height: 38px;
-    }
-}
-@media (max-width: 992px) {
-    .form-wrapper, .preview-wrapper {
-        flex: 100%;
-    }
-}
 
-/* Mobile: make data-entry fields 2 columns */
-@media (max-width: 575.98px) {
+    /* =========================================================
+       INPUTS
+    ========================================================= */
 
-    .form-wrapper {
-        padding: 12px;
-    }
+    .customer-input,
+    .customer-select,
+    .customer-textarea {
 
-    .form-wrapper .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 10px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .form-wrapper .row > [class*="col-"] {
         width: 100%;
-        padding-left: 0;
-        padding-right: 0;
-    }
 
-    .form-label {
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
+        border: 1px solid #dfe3eb;
 
-    .form-control,
-    .form-select {
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        color: #30374a;
+
         font-size: 13px;
-        padding: 7px 8px;
-        min-height: 38px;
+
+        transition: 0.2s ease;
     }
-}
-  </style>
-<div class="container container-box">
-<div id="statusMessage" style="display:none; font-weight:bold;"></div>
-  <!-- Left Form -->
-  <div class="form-wrapper">
-    <!-- <h3 class="text-center mb-3">🎮 Game Store - Customer Entry</h3> -->
-    <div class="text-center mb-4">
-      <strong>🧾 Bill No:</strong> {{ bill_no }}
+
+
+    .customer-input,
+    .customer-select {
+
+        height: 42px;
+
+        padding: 7px 10px;
+    }
+
+
+    .customer-textarea {
+
+        padding: 8px 10px;
+
+        resize: vertical;
+
+        min-height: 75px;
+    }
+
+
+    .customer-input:focus,
+    .customer-select:focus,
+    .customer-textarea:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    /* =========================================================
+       READ ONLY
+    ========================================================= */
+
+    .readonly-field {
+
+        background: #f5f7fa !important;
+
+        color: #747d91 !important;
+
+        border-color: #e1e5ec !important;
+
+        cursor: not-allowed;
+
+        font-weight: 500;
+    }
+
+
+    /* =========================================================
+       CUSTOMER NAME
+    ========================================================= */
+
+    .customer-name-input {
+
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       POINTS
+    ========================================================= */
+
+    .points-input {
+
+        height: 47px;
+
+        font-size: 15px;
+
+        font-weight: 600;
+    }
+
+
+    .points-input:focus {
+
+        border-color: #7040d9;
+
+        box-shadow:
+            0 0 0 2px rgba(112, 64, 217, 0.10);
+    }
+
+
+    /* =========================================================
+       EXPENSE
+    ========================================================= */
+
+    .expense-row {
+
+        margin-top: 1px;
+    }
+
+
+    .expense-amount {
+
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       SAVE AREA
+    ========================================================= */
+
+    .save-area {
+
+        display: flex;
+
+        justify-content: center;
+
+        margin-top: 17px;
+
+        padding-top: 15px;
+
+        border-top: 1px solid #edf0f4;
+    }
+
+
+    .save-button {
+
+        width: 200px;
+
+        height: 45px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        color: #ffffff;
+
+        font-size: 14px;
+
+        font-weight: 600;
+
+        box-shadow:
+            0 4px 14px rgba(0, 168, 204, 0.18);
+
+        transition: 0.2s ease;
+    }
+
+
+    .save-button:hover {
+
+        color: #ffffff;
+
+        transform: translateY(-1px);
+
+        box-shadow:
+            0 6px 18px rgba(0, 168, 204, 0.25);
+    }
+
+
+    /* =========================================================
+       STATUS MESSAGE
+    ========================================================= */
+
+    #statusMessage {
+
+        padding: 8px 10px;
+
+        margin-bottom: 12px;
+
+        border-radius: 7px;
+
+        background: #ecfdf3;
+
+        border: 1px solid #ccebd8;
+
+        color: #198754;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        text-align: center;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 575.98px) {
+
+        .customer-entry-page {
+
+            padding: 2px 2px 20px;
+        }
+
+
+        .customer-entry-top {
+
+            margin-bottom: 11px;
+        }
+
+
+        .customer-entry-icon {
+
+            width: 36px;
+            height: 36px;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+        }
+
+
+        .customer-entry-heading {
+
+            gap: 7px;
+        }
+
+
+        .customer-entry-heading h3 {
+
+            font-size: 18px;
+        }
+
+
+        .bill-number {
+
+            padding: 6px 7px;
+
+            font-size: 8px;
+        }
+
+
+        .customer-form {
+
+            padding: 11px;
+
+            border-radius: 9px;
+        }
+
+
+        .customer-label {
+
+            font-size: 11px;
+
+            margin-bottom: 3px;
+        }
+
+
+        .customer-input,
+        .customer-select {
+
+            height: 39px;
+
+            padding: 6px 8px;
+
+            font-size: 12px;
+        }
+
+
+        .customer-textarea {
+
+            font-size: 12px;
+
+            min-height: 65px;
+        }
+
+
+        .points-input {
+
+            height: 45px;
+
+            font-size: 14px;
+        }
+
+
+        .save-area {
+
+            margin-top: 14px;
+
+            padding-top: 13px;
+        }
+
+
+        .save-button {
+
+            width: 100%;
+
+            height: 46px;
+
+            font-size: 14px;
+        }
+
+    }
+
+
+    /* =========================================================
+       VERY SMALL PHONES
+    ========================================================= */
+
+    @media (max-width: 380px) {
+
+        .customer-form {
+
+            padding: 9px;
+        }
+
+
+        .customer-entry-heading h3 {
+
+            font-size: 17px;
+        }
+
+
+        .bill-number {
+
+            font-size: 7px;
+
+            padding: 5px 6px;
+        }
+
+
+        .customer-input,
+        .customer-select {
+
+            height: 38px;
+
+            font-size: 11px;
+        }
+
+
+        .points-input {
+
+            height: 43px;
+
+            font-size: 13px;
+        }
+
+    }
+
+</style>
+
+
+<div class="customer-entry-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <div class="customer-entry-top">
+
+        <div class="customer-entry-heading">
+
+            <div class="customer-entry-icon">
+
+                <i class="bi bi-person-plus"></i>
+
+            </div>
+
+
+            <h3>
+                Customer Entry
+            </h3>
+
+        </div>
+
+
+        <div class="bill-number">
+
+            🧾
+            Bill No:
+            <strong>{{ bill_no }}</strong>
+
+        </div>
+
     </div>
-    <form method="POST" id="entryForm" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="hidden" name="entry_id" id="entry_id">
-      <div class="row">
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Staff ID</label>
-          <input type="text" class="form-control readonly-field" 
-                value="{% if request.user.store %}{{ request.user.username }} - {{ request.user.store.name }}{% else %}{{ request.user.username }}{% endif %}" 
-                readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Customer ID</label>
-          <input type="text" class="form-control readonly-field" name="customer_id" value="{{ customer_id }}" readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Date</label>
-          <input type="text" class="form-control readonly-field" value="{{ now|date:'Y-m-d' }}" readonly>
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Time</label>
-          <input type="text" class="form-control readonly-field" value="{{ now|time:'H:i:s' }}" readonly>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Select Machine</label>
-          <select class="form-select" name="machine" id="machine" 
-                  {% if staff_machine %} disabled {% endif %}
-                  required>
-            {% if staff_machine %}
-              <option value="{{ staff_machine.id }}" selected>
-                {{ staff_machine.name }} - {{ staff_machine.number }}
-              </option>
-            {% else %}
-              <option value="">Select Machine</option>
-              {% for machine in machines %}
-                <option value="{{ machine.id }}">{{ machine.name }} - {{ machine.number }}</option>
-              {% endfor %}
-            {% endif %}
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Customer Name</label>
-          <input type="text" class="form-control" name="customer_name" placeholder="Enter customer name" required>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">In Points</label>
-            <input type="number" class="form-control"
-                  name="in_points"
-                  min="0" placeholder="Enter in points"
-                  required>
+
+
+
+    <!-- =====================================================
+         STATUS MESSAGE
+    ===================================================== -->
+
+    <div
+        id="statusMessage"
+        style="display:none;"
+    ></div>
+
+
+
+    <!-- =====================================================
+         FORM
+    ===================================================== -->
+
+    <form
+        method="POST"
+        id="entryForm"
+        enctype="multipart/form-data"
+        class="customer-form"
+    >
+
+        {% csrf_token %}
+
+
+        <input
+            type="hidden"
+            name="entry_id"
+            id="entry_id"
+        >
+
+
+
+        <!-- =================================================
+             STAFF / CUSTOMER / DATE / TIME
+        ================================================= -->
+
+        <div class="row g-2">
+
+
+            <!-- Staff -->
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <label class="customer-label">
+                    Staff ID
+                </label>
+
+                <input
+                    type="text"
+                    class="customer-input readonly-field"
+                    value="{% if request.user.store %}{{ request.user.username }} - {{ request.user.store.name }}{% else %}{{ request.user.username }}{% endif %}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Customer ID -->
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <label class="customer-label">
+                    Customer ID
+                </label>
+
+                <input
+                    type="text"
+                    class="customer-input readonly-field"
+                    name="customer_id"
+                    value="{{ customer_id }}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Date -->
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <label class="customer-label">
+                    Date
+                </label>
+
+                <input
+                    type="text"
+                    class="customer-input readonly-field"
+                    value="{{ now|date:'Y-m-d' }}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Time -->
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <label class="customer-label">
+                    Time
+                </label>
+
+                <input
+                    type="text"
+                    class="customer-input readonly-field"
+                    value="{{ now|time:'H\:i:s' }}"
+                    readonly
+                >
+
+            </div>
+
         </div>
 
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Out Points</label>
-            <input type="number" class="form-control"
-                  name="out_points"
-                  min="0" placeholder="Enter out points"
-                  required>
+
+
+        <!-- =================================================
+             MACHINE / CUSTOMER NAME
+        ================================================= -->
+
+        <div class="row g-2 mt-1">
+
+
+            <!-- Machine -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Select Machine
+                </label>
+
+
+                <select
+                    class="customer-select"
+                    name="machine"
+                    id="machine"
+                    {% if staff_machine %}
+                        disabled
+                    {% endif %}
+                    required
+                >
+
+                    {% if staff_machine %}
+
+                        <option
+                            value="{{ staff_machine.id }}"
+                            selected
+                        >
+
+                            {{ staff_machine.name }} -
+                            {{ staff_machine.number }}
+
+                        </option>
+
+                    {% else %}
+
+                        <option value="">
+                            Select Machine
+                        </option>
+
+
+                        {% for machine in machines %}
+
+                            <option value="{{ machine.id }}">
+
+                                {{ machine.name }} -
+                                {{ machine.number }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Customer Name -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Customer Name
+                </label>
+
+
+                <input
+                    type="text"
+                    class="customer-input customer-name-input"
+                    name="customer_name"
+                    placeholder="Customer name"
+                    required
+                >
+
+            </div>
+
         </div>
 
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Expense Type</label>
-            <select class="form-select"
+
+
+        <!-- =================================================
+             POINTS / EXPENSE
+        ================================================= -->
+
+        <div class="row g-2 expense-row mt-1">
+
+
+            <!-- In Points -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    In Points
+                </label>
+
+
+                <input
+                    type="number"
+                    class="customer-input points-input"
+                    name="in_points"
+                    min="0"
+                    placeholder="Enter points"
+                    inputmode="numeric"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- Out Points -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Out Points
+                </label>
+
+
+                <input
+                    type="number"
+                    class="customer-input points-input"
+                    name="out_points"
+                    min="0"
+                    placeholder="Enter points"
+                    inputmode="numeric"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- Expense Type -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Expense Type
+                </label>
+
+
+                <select
+                    class="customer-select"
                     name="expense_type"
                     id="expense_type"
-                    required>
-                <option value="">Select Expense</option>
-                <option value="salary">Salary</option>
-                <option value="tea">Tea</option>
-                <option value="water">Water</option>
-                <option value="lightbill">Light Bill</option>
-                <option value="police">Police</option>
-                <option value="goodluck">Good Luck</option>
-                <option value="other">Other</option>
-            </select>
+                    required
+                >
+
+                    <option value="">
+                        Select Expense
+                    </option>
+
+                    <option value="salary">
+                        Salary
+                    </option>
+
+                    <option value="tea">
+                        Tea
+                    </option>
+
+                    <option value="water">
+                        Water
+                    </option>
+
+                    <option value="lightbill">
+                        Light Bill
+                    </option>
+
+                    <option value="police">
+                        Police
+                    </option>
+
+                    <option value="goodluck">
+                        Good Luck
+                    </option>
+
+                    <option value="other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Expense Amount -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Expense Amount
+                </label>
+
+
+                <input
+                    type="number"
+                    class="customer-input expense-amount"
+                    name="expense_amt"
+                    id="expense_amt"
+                    min="0"
+                    placeholder="Enter amount"
+                    inputmode="decimal"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- Good Luck -->
+
+            <div class="col-6 col-md-6 mb-2">
+
+                <label class="customer-label">
+                    Good Luck
+                </label>
+
+
+                <input
+                    type="number"
+                    class="customer-input"
+                    name="goodluck_amt"
+                    id="goodluck_amt"
+                    min="0"
+                    placeholder="Enter amount"
+                    inputmode="decimal"
+                >
+
+            </div>
+
+
+
+            <!-- Remarks -->
+
+            <div
+                class="col-6 col-md-6 mb-2"
+                id="remarks_group"
+                style="display:none;"
+            >
+
+                <label class="customer-label">
+                    Remarks
+                </label>
+
+
+                <textarea
+                    class="customer-textarea"
+                    name="remarks"
+                    id="remarks"
+                    rows="2"
+                    placeholder="Enter expense remark"
+                ></textarea>
+
+            </div>
+
         </div>
 
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Expense Amount</label>
-            <input type="number"
-                  class="form-control"
-                  name="expense_amt"
-                  id="expense_amt"
-                  min="0" placeholder="Enter expense amt"
-                  required>
+
+
+        <!-- =================================================
+             SAVE
+        ================================================= -->
+
+        <div class="save-area">
+
+            <button
+                type="submit"
+                id="saveBtn"
+                class="save-button"
+            >
+
+                <i class="bi bi-check-circle me-2"></i>
+
+                Save Data
+
+            </button>
+
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Good Luck</label>
-            <input type="number" class="form-control"
-                  name="goodluck_amt"
-                  id="goodluck_amt"
-                  min="0" placeholder="Enter goodluck amt">
-        </div>
-        <div class="col-md-6 mb-3" id="remarks_group" style="display: none;">
-          <label class="form-label">Remarks</label>
-          <textarea class="form-control" name="remarks" id="remarks" rows="3" placeholder="Enter expense remark"></textarea>
-        </div>
-      </div>
-      <!-- <div class="mb-3">
-        <label class="form-label">Take Photo (Camera)</label>
-        <div>
-          <video id="camera" width="100%" autoplay playsinline style="border: 1px solid #ccc; border-radius: 5px;"></video>
-          <canvas id="snapshot" style="display: none;"></canvas>
-          <input type="hidden" name="photo_data" id="photo_data">
-          <button type="button" class="btn btn-outline-primary mt-2" onclick="takeSnapshot()">📸 Take Snapshot</button>
-        </div>
-      </div> -->
-      <div class="text-center">
-        <button type="submit" id="saveBtn" class="btn btn-primary px-4">💾 Save Data</button>
-        <!-- <button type="button" id="enableEditBtn" class="btn btn-warning px-4" style="display: none;">✏️ Edit</button> -->
-      </div>
+
     </form>
-  </div>
+
 </div>
+
+
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('entryForm');
-  const printBtn = document.getElementById('printBtn');
-  const saveBtn = document.getElementById('saveBtn');
-  const enableEditBtn = document.getElementById('enableEditBtn');
-  const msgBox = document.getElementById('statusMessage');
 
-  if (!form) return;
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
 
-      if (!confirm("Are you sure you want to save this data?")) return;
+        const form =
+            document.getElementById(
+                'entryForm'
+            );
 
-      const formData = new FormData(form);
 
-      try {
-          const response = await fetch('', {
-              method: 'POST',
-              headers: {
-                  'X-Requested-With': 'XMLHttpRequest'
-              },
-              body: formData
-          });
+        const saveBtn =
+            document.getElementById(
+                'saveBtn'
+            );
 
-          if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-          }
 
-          const result = await response.json();
+        const msgBox =
+            document.getElementById(
+                'statusMessage'
+            );
 
-          if (result.success) {
 
-              msgBox.innerText = "✅ Data saved successfully!";
-              msgBox.style.color = "green";
-              msgBox.style.display = "block";
+        const expenseType =
+            document.getElementById(
+                'expense_type'
+            );
 
-              // Wait a moment so user can see success message,
-              // then reload a completely fresh entry form.
-              setTimeout(() => {
-                  window.location.href = window.location.pathname;
-              }, 1000);
 
-          } else {
-              throw new Error("Server returned success=false");
-          }
+        const remarksGroup =
+            document.getElementById(
+                'remarks_group'
+            );
 
-      } catch (err) {
-          console.error("Save error:", err);
-          alert("❌ Failed to save data.");
-      }
-  });
-});
+
+        const remarks =
+            document.getElementById(
+                'remarks'
+            );
+
+
+        if (!form) {
+
+            return;
+
+        }
+
+
+
+        /* =================================================
+           EXPENSE REMARKS
+        ================================================= */
+
+        function updateRemarksVisibility() {
+
+
+            if (
+                expenseType &&
+                expenseType.value === 'other'
+            ) {
+
+                remarksGroup.style.display =
+                    'block';
+
+            }
+
+            else {
+
+                remarksGroup.style.display =
+                    'none';
+
+                if (remarks) {
+
+                    remarks.value = '';
+
+                }
+
+            }
+
+        }
+
+
+        if (expenseType) {
+
+            expenseType.addEventListener(
+                'change',
+                updateRemarksVisibility
+            );
+
+        }
+
+
+        updateRemarksVisibility();
+
+
+
+        /* =================================================
+           FORM SUBMIT
+        ================================================= */
+
+        form.addEventListener(
+            'submit',
+            async function (e) {
+
+
+                e.preventDefault();
+
+
+                if (
+                    !confirm(
+                        "Are you sure you want to save this data?"
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                /* Prevent double click */
+
+                saveBtn.disabled = true;
+
+                saveBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+
+                const formData =
+                    new FormData(form);
+
+
+                try {
+
+
+                    const response =
+                        await fetch(
+                            '',
+                            {
+                                method: 'POST',
+
+                                headers: {
+                                    'X-Requested-With':
+                                        'XMLHttpRequest'
+                                },
+
+                                body: formData
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            `HTTP ${response.status}`
+                        );
+
+                    }
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (result.success) {
+
+
+                        msgBox.innerText =
+                            "Data saved successfully!";
+
+
+                        msgBox.style.color =
+                            "#198754";
+
+
+                        msgBox.style.background =
+                            "#ecfdf3";
+
+
+                        msgBox.style.borderColor =
+                            "#ccebd8";
+
+
+                        msgBox.style.display =
+                            "block";
+
+
+                        setTimeout(
+                            function () {
+
+                                window.location.href =
+                                    window.location.pathname;
+
+                            },
+                            1000
+                        );
+
+                    }
+
+                    else {
+
+                        throw new Error(
+                            "Server returned success=false"
+                        );
+
+                    }
+
+
+                }
+
+                catch (err) {
+
+
+                    console.error(
+                        "Save error:",
+                        err
+                    );
+
+
+                    alert(
+                        "Failed to save data."
+                    );
+
+
+                    saveBtn.disabled =
+                        false;
+
+
+                    saveBtn.innerHTML =
+                        '<i class="bi bi-check-circle me-2"></i>Save Data';
+
+                }
+
+            }
+        );
+
+    }
+);
 
 </script>
+
 {% endblock %}

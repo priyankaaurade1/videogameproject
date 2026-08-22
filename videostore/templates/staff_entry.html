@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% load static %}
 
 {% block page_title %}Staff Entries{% endblock %}
@@ -6,385 +7,1413 @@
 {% block content %}
 
 <style>
-  .container-box {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
 
-  .form-wrapper {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-  }
+    /* =========================================================
+       CLEAN STAFF ENTRY PAGE
+    ========================================================= */
 
-  .preview-wrapper {
-    flex: 0 0 38%;
-    background: #fff8e1;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.05);
-    min-height: 400px;
-  }
-
-  .readonly-field[readonly] {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    font-weight: 500;
-    cursor: not-allowed;
-  }
-
-  .content,
-  .card-body {
-    padding: 0 !important;
-  }
-
-  @media (max-width: 992px) {
-    .form-wrapper,
-    .preview-wrapper {
-      flex: 100%;
-      margin-top: 20px;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .container {
-      padding-left: 10px;
-      padding-right: 10px;
+    .staff-entry-page {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 10px 5px 25px;
     }
 
-    h3 {
-      font-size: 20px;
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .entry-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        margin-bottom: 18px;
     }
 
-    .form-label {
-      font-size: 13px;
-      margin-bottom: 4px;
+
+    .entry-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .form-control,
-    .form-select {
-      font-size: 14px;
-      padding: 8px;
+
+    .entry-heading-icon {
+        width: 42px;
+        height: 42px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: linear-gradient(
+            135deg,
+            #00bcd4,
+            #7040d9
+        );
+
+        color: white;
+
+        font-size: 19px;
     }
 
-    .row.g-2 {
-      margin-left: -4px;
-      margin-right: -4px;
+
+    .entry-heading h3 {
+        margin: 0;
+
+        color: #151b2e;
+
+        font-size: 21px;
+
+        font-weight: 700;
     }
 
-    .row.g-2 > [class*="col-"] {
-      padding-left: 4px;
-      padding-right: 4px;
+
+    .reading-number {
+        background: #f1fbfd;
+
+        color: #008ca3;
+
+        border: 1px solid #d5f1f5;
+
+        border-radius: 7px;
+
+        padding: 7px 10px;
+
+        font-size: 11px;
+
+        white-space: nowrap;
     }
 
-    .btn {
-      font-size: 14px;
+
+    /* =========================================================
+       ALERT
+    ========================================================= */
+
+    .entry-alert {
+        border: none;
+
+        border-radius: 7px;
+
+        font-size: 13px;
+
+        padding: 8px 12px;
+
+        margin-bottom: 15px;
     }
-  }
+
+
+    /* =========================================================
+       FORM
+    ========================================================= */
+
+    .entry-form {
+        background: #ffffff;
+
+        border: 1px solid #e5e8ef;
+
+        border-radius: 12px;
+
+        padding: 18px;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    /* =========================================================
+       LABELS
+    ========================================================= */
+
+    .entry-label {
+        display: block;
+
+        margin-bottom: 5px;
+
+        color: #424a5d;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       INPUTS
+    ========================================================= */
+
+    .entry-input,
+    .entry-select {
+
+        width: 100%;
+
+        height: 42px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 7px;
+
+        padding: 8px 11px;
+
+        background: #ffffff;
+
+        color: #30374a;
+
+        font-size: 13px;
+    }
+
+
+    .entry-input:focus,
+    .entry-select:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    /* =========================================================
+       READ ONLY FIELDS
+    ========================================================= */
+
+    .readonly-field {
+
+        background: #f5f7fa !important;
+
+        color: #747d91 !important;
+
+        border-color: #e1e5ec !important;
+
+        cursor: not-allowed;
+    }
+
+
+    /* =========================================================
+       READINGS
+    ========================================================= */
+
+    .readings-row {
+        margin-top: 15px;
+    }
+
+
+    .reading-box {
+        position: relative;
+    }
+
+
+    .reading-input {
+
+        width: 100%;
+
+        height: 48px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 8px;
+
+        padding: 8px 12px;
+
+        background: #ffffff;
+
+        color: #20263a;
+
+        font-size: 16px;
+
+        font-weight: 600;
+
+        text-align: left;
+    }
+
+
+    .reading-input:focus {
+
+        outline: none;
+
+        border-color: #7040d9;
+
+        box-shadow:
+            0 0 0 2px rgba(112, 64, 217, 0.10);
+    }
+
+
+    /* =========================================================
+       PHOTO AREA
+    ========================================================= */
+
+    .photo-section {
+
+        margin-top: 17px;
+    }
+
+
+    .photo-label {
+
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #424a5d;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    .photo-input {
+
+        width: 100%;
+
+        min-height: 43px;
+
+        padding: 7px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        font-size: 12px;
+    }
+
+
+    .photo-input:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    .photo-note {
+
+        margin-top: 5px;
+
+        color: #8a92a5;
+
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       PHOTO PREVIEW
+    ========================================================= */
+
+    .photo-preview {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        margin-top: 10px;
+    }
+
+
+    .photo-item {
+
+        position: relative;
+
+        width: 72px;
+
+        height: 72px;
+
+        border-radius: 7px;
+
+        overflow: hidden;
+
+        border: 1px solid #dfe3eb;
+
+        background: #f4f6f9;
+    }
+
+
+    .photo-item img {
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: cover;
+    }
+
+
+    .photo-remove {
+
+        position: absolute;
+
+        top: 3px;
+
+        right: 3px;
+
+        width: 21px;
+
+        height: 21px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 0;
+
+        border: none;
+
+        border-radius: 50%;
+
+        background: rgba(220, 53, 69, 0.92);
+
+        color: white;
+
+        font-size: 10px;
+
+        cursor: pointer;
+    }
+
+
+    /* =========================================================
+       EXISTING PHOTOS
+    ========================================================= */
+
+    .existing-photos {
+
+        margin-top: 14px;
+
+        padding-top: 12px;
+
+        border-top: 1px solid #edf0f4;
+    }
+
+
+    .existing-title {
+
+        margin-bottom: 7px;
+
+        color: #555e72;
+
+        font-size: 11px;
+
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       SAVE BUTTON
+    ========================================================= */
+
+    .save-area {
+
+        margin-top: 18px;
+
+        display: flex;
+
+        justify-content: center;
+    }
+
+
+    .save-button {
+
+        width: 200px;
+
+        height: 45px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        color: white;
+
+        font-size: 14px;
+
+        font-weight: 600;
+
+        box-shadow:
+            0 4px 14px rgba(0, 168, 204, 0.18);
+
+        transition: 0.2s ease;
+    }
+
+
+    .save-button:hover {
+
+        transform: translateY(-1px);
+
+        color: white;
+
+        box-shadow:
+            0 6px 18px rgba(0, 168, 204, 0.25);
+    }
+
+
+    /* =========================================================
+       TABLET
+    ========================================================= */
+
+    @media (max-width: 768px) {
+
+        .staff-entry-page {
+            padding: 5px 3px 20px;
+        }
+
+
+        .entry-form {
+            padding: 15px;
+        }
+
+
+        .entry-heading h3 {
+            font-size: 19px;
+        }
+
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 576px) {
+
+        .staff-entry-page {
+            padding: 3px 2px 20px;
+        }
+
+
+        .entry-top {
+            margin-bottom: 13px;
+        }
+
+
+        .entry-heading {
+            gap: 7px;
+        }
+
+
+        .entry-heading-icon {
+            width: 36px;
+
+            height: 36px;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+        }
+
+
+        .entry-heading h3 {
+            font-size: 18px;
+        }
+
+
+        .reading-number {
+            padding: 6px 7px;
+
+            font-size: 9px;
+        }
+
+
+        .entry-form {
+            padding: 12px;
+
+            border-radius: 9px;
+        }
+
+
+        .entry-label {
+            font-size: 11px;
+
+            margin-bottom: 4px;
+        }
+
+
+        .entry-input,
+        .entry-select {
+            height: 40px;
+
+            padding: 7px 9px;
+
+            font-size: 12px;
+        }
+
+
+        .reading-input {
+            height: 47px;
+
+            font-size: 15px;
+
+            padding: 7px 10px;
+        }
+
+
+        .readings-row {
+            margin-top: 12px;
+        }
+
+
+        .photo-section {
+            margin-top: 14px;
+        }
+
+
+        .photo-input {
+            min-height: 42px;
+
+            font-size: 11px;
+        }
+
+
+        .photo-item {
+            width: 65px;
+
+            height: 65px;
+        }
+
+
+        .save-area {
+            margin-top: 15px;
+        }
+
+
+        .save-button {
+            width: 100%;
+
+            height: 46px;
+
+            font-size: 14px;
+        }
+
+    }
+
+
+    /* =========================================================
+       VERY SMALL PHONES
+    ========================================================= */
+
+    @media (max-width: 380px) {
+
+        .entry-form {
+            padding: 10px;
+        }
+
+
+        .entry-heading h3 {
+            font-size: 17px;
+        }
+
+
+        .reading-number {
+            font-size: 8px;
+
+            padding: 5px 6px;
+        }
+
+
+        .entry-input,
+        .entry-select {
+            height: 38px;
+
+            font-size: 11px;
+        }
+
+
+        .reading-input {
+            height: 45px;
+
+            font-size: 14px;
+        }
+
+    }
+
 </style>
 
-<div class="container mt-4">
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-success auto-dismiss">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-
-  <h3 class="text-center mb-3">Reading Entry</h3>
-
-  <div class="text-center mb-3">
-    <strong>🧾 Reading No:</strong> {{ Reading_no }}
-  </div>
-
-  <form method="POST" enctype="multipart/form-data" id="entryForm">
-
-    {% csrf_token %}
-
-    <!-- STAFF / DATE / TIME / MACHINE -->
-    <div class="row g-2 mb-3">
-
-      <div class="col-6 col-md-3">
-        <label class="form-label">Staff ID</label>
-        <input type="text"
-               class="form-control readonly-field"
-               value="{{ request.user.username }}{% if request.user.store %} - {{ request.user.store.name }}{% endif %}"
-               readonly>
-      </div>
-
-      <div class="col-6 col-md-3">
-        <label class="form-label">Date</label>
-        <input type="text"
-               class="form-control readonly-field"
-               value="{{ now|date:'Y-m-d' }}"
-               readonly>
-      </div>
-
-      <div class="col-6 col-md-3">
-        <label class="form-label">Time</label>
-        <input type="text"
-               class="form-control readonly-field"
-               value="{{ now|time:'H:i:s' }}"
-               readonly>
-      </div>
-
-      <div class="col-6 col-md-3">
-        <label class="form-label">Select Machine</label>
-        <select class="form-select"
-                name="machine"
-                required>
-
-          <option value="">-- Select Machine --</option>
-
-          {% for machine in machines %}
-            <option value="{{ machine.id }}"
-                    {% if entry and entry.machine.id == machine.id %}selected{% endif %}>
-              {{ machine.name }} - {{ machine.number }}
-            </option>
-          {% endfor %}
-
-        </select>
-      </div>
-
-    </div>
+<div class="staff-entry-page">
 
 
-    <!-- READINGS -->
-    <div class="row g-2 mb-3">
+    <!-- =====================================================
+         SMALL HEADER
+    ===================================================== -->
 
-      <div class="col-6 col-md-3">
-        <label class="form-label">Reading 1</label>
-        <input type="number"
-               class="form-control"
-               name="reading_1"
-               min="0"
-               required
-               value="{{ entry.reading_1|default_if_none:'' }}">
-      </div>
+    <div class="entry-top">
 
-      <div class="col-6 col-md-3">
-        <label class="form-label">Reading 2</label>
-        <input type="number"
-               class="form-control"
-               name="reading_2"
-               min="0"
-               required
-               value="{{ entry.reading_2|default_if_none:'' }}">
-      </div>
+        <div class="entry-heading">
 
-      <div class="col-6 col-md-3">
-        <label class="form-label">Reading 3</label>
-        <input type="number"
-               class="form-control"
-               name="reading_3"
-               min="0"
-               required
-               value="{{ entry.reading_3|default_if_none:'' }}">
-      </div>
+            <div class="entry-heading-icon">
 
-      <div class="col-6 col-md-3">
-        <label class="form-label">Reading 4</label>
-        <input type="number"
-               class="form-control"
-               name="reading_4"
-               min="0"
-               required
-               value="{{ entry.reading_4|default_if_none:'' }}">
-      </div>
-
-    </div>
-
-
-    <!-- NEW PHOTOS -->
-    <div class="mb-3">
-
-      <label class="form-label">
-        Photos (Take / Choose)
-      </label>
-
-      <input type="file"
-             id="photoInput"
-             name="photos"
-             accept="image/*"
-             capture="environment"
-             multiple
-             class="form-control mb-2">
-
-      <div id="photoPreview"
-           class="d-flex flex-wrap gap-2">
-      </div>
-
-    </div>
-
-
-    <!-- EXISTING PHOTOS -->
-    {% if existing_photos %}
-
-      <div class="mb-3">
-
-        <label class="form-label">
-          Existing Photos
-        </label>
-
-        <div id="existingPhotoPreview"
-             class="d-flex flex-wrap gap-2">
-
-          {% for photo in existing_photos %}
-
-            <div class="position-relative existing-photo"
-                 data-photo-id="{{ photo.id }}">
-
-              <img src="{{ photo.photo.url }}"
-                   class="rounded border"
-                   style="width:80px;height:80px;object-fit:cover;">
-
-              <button type="button"
-                      class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-existing-btn">
-                ❌
-              </button>
+                <i class="bi bi-clipboard-data"></i>
 
             </div>
 
-          {% endfor %}
+
+            <div>
+
+                <h3>
+                    Reading Entry
+                </h3>
+
+            </div>
 
         </div>
 
-      </div>
+
+        <div class="reading-number">
+
+            🧾
+            Reading No:
+            <strong>{{ Reading_no }}</strong>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MESSAGES
+    ===================================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert alert-success entry-alert auto-dismiss">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
 
     {% endif %}
 
 
-    <!-- DELETE PHOTO IDS -->
-    <input type="hidden"
-           name="delete_photos"
-           id="deletePhotosField">
+
+    <!-- =====================================================
+         FORM
+    ===================================================== -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        id="entryForm"
+        class="entry-form"
+    >
+
+        {% csrf_token %}
 
 
-    <!-- SAVE / UPDATE -->
-    <div class="text-center">
 
-      <button type="submit"
-              class="btn btn-primary px-4">
+        <!-- =================================================
+             STAFF / DATE / TIME / MACHINE
+        ================================================= -->
 
-        {% if entry %}
-          💾 Update Data
-        {% else %}
-          💾 Save Data
-        {% endif %}
+        <div class="row g-2">
 
-      </button>
 
-    </div>
+            <!-- Staff -->
 
-  </form>
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Staff ID
+                </label>
+
+                <input
+                    type="text"
+                    class="entry-input readonly-field"
+                    value="{{ request.user.username }}{% if request.user.store %} - {{ request.user.store.name }}{% endif %}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Date -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Date
+                </label>
+
+                <input
+                    type="text"
+                    class="entry-input readonly-field"
+                    value="{{ now|date:'Y-m-d' }}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Time -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Time
+                </label>
+
+                <input
+                    type="text"
+                    class="entry-input readonly-field"
+                    value="{{ now|time:'H\:i:s' }}"
+                    readonly
+                >
+
+            </div>
+
+
+
+            <!-- Machine -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Select Machine
+                </label>
+
+                <select
+                    class="entry-select"
+                    name="machine"
+                    required
+                >
+
+                    <option value="">
+                        -- Select Machine --
+                    </option>
+
+                    {% for machine in machines %}
+
+                        <option
+                            value="{{ machine.id }}"
+                            {% if entry and entry.machine.id == machine.id %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ machine.name }} - {{ machine.number }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             READINGS
+        ================================================= -->
+
+        <div class="row g-2 readings-row">
+
+
+            <!-- Reading 1 -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Reading 1
+                </label>
+
+                <div class="reading-box">
+
+                    <input
+                        type="number"
+                        class="reading-input"
+                        name="reading_1"
+                        min="0"
+                        required
+                        value="{{ entry.reading_1|default_if_none:'' }}"
+                        placeholder="Enter reading"
+                        inputmode="numeric"
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Reading 2 -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Reading 2
+                </label>
+
+                <div class="reading-box">
+
+                    <input
+                        type="number"
+                        class="reading-input"
+                        name="reading_2"
+                        min="0"
+                        required
+                        value="{{ entry.reading_2|default_if_none:'' }}"
+                        placeholder="Enter reading"
+                        inputmode="numeric"
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Reading 3 -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Reading 3
+                </label>
+
+                <div class="reading-box">
+
+                    <input
+                        type="number"
+                        class="reading-input"
+                        name="reading_3"
+                        min="0"
+                        required
+                        value="{{ entry.reading_3|default_if_none:'' }}"
+                        placeholder="Enter reading"
+                        inputmode="numeric"
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Reading 4 -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="entry-label">
+                    Reading 4
+                </label>
+
+                <div class="reading-box">
+
+                    <input
+                        type="number"
+                        class="reading-input"
+                        name="reading_4"
+                        min="0"
+                        required
+                        value="{{ entry.reading_4|default_if_none:'' }}"
+                        placeholder="Enter reading"
+                        inputmode="numeric"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             PHOTOS
+        ================================================= -->
+
+        <div class="photo-section">
+
+            <label class="photo-label">
+                Photos
+            </label>
+
+
+            <input
+                type="file"
+                id="photoInput"
+                name="photos"
+                accept="image/*"
+                capture="environment"
+                multiple
+                class="photo-input"
+            >
+
+
+            <div class="photo-note">
+
+                <i class="bi bi-camera me-1"></i>
+
+                Take photos or choose from your phone.
+
+            </div>
+
+
+            <!-- New Photo Preview -->
+
+            <div
+                id="photoPreview"
+                class="photo-preview"
+            ></div>
+
+
+
+            <!-- Existing Photos -->
+
+            {% if existing_photos %}
+
+                <div class="existing-photos">
+
+                    <div class="existing-title">
+
+                        Existing Photos
+
+                    </div>
+
+
+                    <div
+                        id="existingPhotoPreview"
+                        class="photo-preview"
+                    >
+
+                        {% for photo in existing_photos %}
+
+                            <div
+                                class="photo-item existing-photo"
+                                data-photo-id="{{ photo.id }}"
+                            >
+
+                                <img
+                                    src="{{ photo.photo.url }}"
+                                    alt="Existing photo"
+                                >
+
+
+                                <button
+                                    type="button"
+                                    class="photo-remove remove-existing-btn"
+                                    title="Remove"
+                                >
+
+                                    <i class="bi bi-x"></i>
+
+                                </button>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- Delete Photo IDs -->
+
+            <input
+                type="hidden"
+                name="delete_photos"
+                id="deletePhotosField"
+            >
+
+        </div>
+
+
+
+        <!-- =================================================
+             SAVE
+        ================================================= -->
+
+        <div class="save-area">
+
+            <button
+                type="submit"
+                class="save-button"
+            >
+
+                {% if entry %}
+
+                    <i class="bi bi-arrow-repeat me-2"></i>
+
+                    Update Data
+
+                {% else %}
+
+                    <i class="bi bi-check-circle me-2"></i>
+
+                    Save Data
+
+                {% endif %}
+
+            </button>
+
+        </div>
+
+
+    </form>
 
 </div>
 
 
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const photoInput = document.getElementById('photoInput');
-    const previewDiv = document.getElementById('photoPreview');
-    let photoFiles = [];
 
-    photoInput.addEventListener('change', function (event) {
-        for (const file of event.target.files) {
-            photoFiles.push(file);
-        }
-        updatePhotoInput();
-        renderPhotos();
-    });
+/* =========================================================
+   PHOTO UPLOAD
+========================================================= */
 
-    function updatePhotoInput() {
-        const dataTransfer = new DataTransfer();
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-        photoFiles.forEach(file => {
-            dataTransfer.items.add(file);
-        });
 
-        photoInput.files = dataTransfer.files;
-    }
+        const photoInput =
+            document.getElementById(
+                'photoInput'
+            );
 
-    function renderPhotos() {
-        previewDiv.innerHTML = '';
 
-        photoFiles.forEach((file, index) => {
-            const reader = new FileReader();
+        const previewDiv =
+            document.getElementById(
+                'photoPreview'
+            );
 
-            reader.onload = function (e) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'position-relative';
 
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'rounded border';
-                img.style.width = '80px';
-                img.style.height = '80px';
-                img.style.objectFit = 'cover';
+        let photoFiles = [];
 
-                wrapper.appendChild(img);
 
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-                removeBtn.innerHTML = '❌';
 
-                removeBtn.onclick = function () {
-                    if (confirm('Are you sure you want to remove this new photo?')) {
-                        photoFiles.splice(index, 1);
-                        updatePhotoInput();
-                        renderPhotos();
-                    }
-                };
+        /* =================================================
+           ADD SELECTED PHOTOS
+        ================================================= */
 
-                wrapper.appendChild(removeBtn);
-                previewDiv.appendChild(wrapper);
-            };
+        photoInput.addEventListener(
+            'change',
+            function (event) {
 
-            reader.readAsDataURL(file);
-        });
-    }
 
-    const deletePhotosField = document.getElementById('deletePhotosField');
-    const existingPhotoPreview = document.getElementById('existingPhotoPreview');
-    let deletedPhotoIds = [];
+                for (
+                    const file of event.target.files
+                ) {
 
-    if (existingPhotoPreview) {
-        existingPhotoPreview.addEventListener('click', function (e) {
-            if (e.target.classList.contains('remove-existing-btn')) {
-                const wrapper = e.target.closest('.existing-photo');
-                const photoId = wrapper.getAttribute('data-photo-id');
+                    photoFiles.push(file);
 
-                if (photoId) {
-                    if (confirm('Are you sure you want to remove this existing photo?')) {
-                        deletedPhotoIds.push(photoId);
-                        deletePhotosField.value = deletedPhotoIds.join(',');
-                        wrapper.remove();
-                    }
                 }
+
+
+                updatePhotoInput();
+
+                renderPhotos();
+
             }
-        });
+        );
+
+
+
+        /* =================================================
+           UPDATE FILE INPUT
+        ================================================= */
+
+        function updatePhotoInput() {
+
+            const dataTransfer =
+                new DataTransfer();
+
+
+            photoFiles.forEach(
+                function (file) {
+
+                    dataTransfer.items.add(file);
+
+                }
+            );
+
+
+            photoInput.files =
+                dataTransfer.files;
+
+        }
+
+
+
+        /* =================================================
+           RENDER NEW PHOTOS
+        ================================================= */
+
+        function renderPhotos() {
+
+            previewDiv.innerHTML = '';
+
+
+            photoFiles.forEach(
+                function (file, index) {
+
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload =
+                        function (e) {
+
+
+                            const wrapper =
+                                document.createElement(
+                                    'div'
+                                );
+
+
+                            wrapper.className =
+                                'photo-item';
+
+
+                            const img =
+                                document.createElement(
+                                    'img'
+                                );
+
+
+                            img.src =
+                                e.target.result;
+
+
+                            img.alt =
+                                'New photo';
+
+
+                            wrapper.appendChild(
+                                img
+                            );
+
+
+                            const removeBtn =
+                                document.createElement(
+                                    'button'
+                                );
+
+
+                            removeBtn.type =
+                                'button';
+
+
+                            removeBtn.className =
+                                'photo-remove';
+
+
+                            removeBtn.innerHTML =
+                                '<i class="bi bi-x"></i>';
+
+
+                            removeBtn.onclick =
+                                function () {
+
+
+                                    if (
+                                        confirm(
+                                            'Are you sure you want to remove this new photo?'
+                                        )
+                                    ) {
+
+
+                                        photoFiles.splice(
+                                            index,
+                                            1
+                                        );
+
+
+                                        updatePhotoInput();
+
+                                        renderPhotos();
+
+                                    }
+
+                                };
+
+
+                            wrapper.appendChild(
+                                removeBtn
+                            );
+
+
+                            previewDiv.appendChild(
+                                wrapper
+                            );
+
+                        };
+
+
+                    reader.readAsDataURL(
+                        file
+                    );
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           EXISTING PHOTO DELETE
+        ================================================= */
+
+        const deletePhotosField =
+            document.getElementById(
+                'deletePhotosField'
+            );
+
+
+        const existingPhotoPreview =
+            document.getElementById(
+                'existingPhotoPreview'
+            );
+
+
+        let deletedPhotoIds = [];
+
+
+
+        if (existingPhotoPreview) {
+
+
+            existingPhotoPreview.addEventListener(
+                'click',
+                function (e) {
+
+
+                    const button =
+                        e.target.closest(
+                            '.remove-existing-btn'
+                        );
+
+
+                    if (!button) {
+                        return;
+                    }
+
+
+                    const wrapper =
+                        button.closest(
+                            '.existing-photo'
+                        );
+
+
+                    const photoId =
+                        wrapper.getAttribute(
+                            'data-photo-id'
+                        );
+
+
+                    if (photoId) {
+
+
+                        if (
+                            confirm(
+                                'Are you sure you want to remove this existing photo?'
+                            )
+                        ) {
+
+
+                            deletedPhotoIds.push(
+                                photoId
+                            );
+
+
+                            deletePhotosField.value =
+                                deletedPhotoIds.join(
+                                    ','
+                                );
+
+
+                            wrapper.remove();
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           AUTO DISMISS MESSAGE
+        ================================================= */
+
+        setTimeout(
+            function () {
+
+
+                document
+                    .querySelectorAll(
+                        '.auto-dismiss'
+                    )
+                    .forEach(
+                        function (el) {
+
+
+                            el.style.transition =
+                                'opacity 0.4s ease';
+
+
+                            el.style.opacity =
+                                '0';
+
+
+                            setTimeout(
+                                function () {
+
+                                    el.remove();
+
+                                },
+                                400
+                            );
+
+                        }
+                    );
+
+
+            },
+            3000
+        );
+
     }
-});
-
-
-/* ==========================================
-   AUTO DISMISS SUCCESS MESSAGE
-========================================== */
-
-setTimeout(function () {
-
-  document
-    .querySelectorAll('.auto-dismiss')
-    .forEach(function (el) {
-
-      el.remove();
-
-    });
-
-}, 3000);
+);
 
 </script>
 

@@ -1,293 +1,1594 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Videogame Project</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <style>
-    html, body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
 
-    /* DESKTOP SIDEBAR */
-    .desktop-sidebar {
-      background-color: #2c3e50;
-      color: white;
-      min-width: 220px;
-      max-width: 220px;
-      height: 100vh;
-      overflow-y: auto;
-      transition: all 0.3s ease-in-out;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    .desktop-sidebar.collapsed {
-      min-width: 70px;
-      max-width: 70px;
-    }
+    <title>{% block title %}Video Game Management{% endblock %}</title>
 
-    .desktop-sidebar .sidebar-header {
-      padding: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+    <!-- Bootstrap 5 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
-    .desktop-sidebar ul.nav {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
 
-    .desktop-sidebar ul.nav li {
-      padding: 15px 20px;
-    }
+    <style>
 
-    .desktop-sidebar ul.nav li a {
-      color: white;
-      text-decoration: none;
-      display: block;
-    }
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
 
-    .desktop-sidebar ul.nav li:hover {
-      background-color: #34495e;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    .desktop-sidebar .submenu {
-      display: none;
-      list-style: none;
-      padding-left: 16px;
-      margin: 0;
-    }
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f6fb;
+            overflow-x: hidden;
+        }
 
-    .desktop-sidebar .has-submenu:hover .submenu {
-      display: block;
-    }
+        body {
+            min-height: 100vh;
+        }
 
-    .desktop-sidebar .submenu a {
-      font-size: 14px;
-      padding: 2px 8px;
-    }
+        a {
+            text-decoration: none;
+        }
 
-    .desktop-sidebar .toggle-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 18px;
-      padding: 10px;
-      cursor: pointer;
-      text-align: left;
-      width: 100%;
-    }
 
-    .desktop-sidebar.collapsed .username-text,
-    .desktop-sidebar.collapsed .logout-icon,
-    .desktop-sidebar.collapsed .store-info,
-    .desktop-sidebar.collapsed .nav-text {
-      display: none !important;
-    }
+        /* =========================================================
+           DESKTOP SIDEBAR
+        ========================================================= */
 
-    .desktop-sidebar.collapsed .sidebar-header {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
-    }
+        .desktop-sidebar {
+            width: 245px;
+            min-width: 245px;
+            height: 100vh;
 
-    /* MOBILE OFFCANVAS SIDEBAR */
-    .mobile-sidebar {
-      background-color: #2c3e50;
-      color: white;
-      width: 100%;
-      overflow-y: auto;
-      padding: 0;
-    }
+            position: fixed;
+            top: 0;
+            left: 0;
 
-    .mobile-sidebar .sidebar-header {
-      padding: 16px;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-size: larger;
-    }
+            display: flex;
+            flex-direction: column;
 
-    .mobile-sidebar ul.nav {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      width: 100%;
-    }
+            background:
+                linear-gradient(
+                    180deg,
+                    #0b1020 0%,
+                    #10172d 100%
+                );
 
-    .mobile-sidebar ul.nav li {
-      padding: 12px 16px;
-      margin: 0;
-      width: 100%;
-    }
+            color: #ffffff;
 
-    .mobile-sidebar ul.nav li a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      width: 100%;
-      font-size: large;
-    }
+            border-right: 1px solid rgba(0, 212, 255, 0.15);
 
-    .mobile-sidebar ul.nav li a:hover {
-      background-color: #34495e;
-    }
+            box-shadow:
+                5px 0 25px rgba(0, 0, 0, 0.12);
 
-    .mobile-sidebar .submenu {
-      display: none;
-      list-style: none;
-      padding-left: 16px;
-      margin: 0;
-    }
+            transition:
+                width 0.25s ease,
+                min-width 0.25s ease;
 
-    .mobile-sidebar .has-submenu:hover .submenu {
-      display: block;
-    }
+            z-index: 1000;
 
-    .mobile-sidebar .submenu a {
-      font-size: 14px;
-      padding: 2px 8px;
-    }
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
 
-    .content {
-      padding: 20px;
-      flex-grow: 1;
-    }
 
-    /* ENSURE SIDEBAR IS HIDDEN ON MOBILE */
-    @media (max-width: 767.98px) {
-      .desktop-sidebar {
-        display: none !important;
-      }
-    }
-  </style>
+        /* Sidebar scrollbar */
+
+        .desktop-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .desktop-sidebar::-webkit-scrollbar-track {
+            background: #0b1020;
+        }
+
+        .desktop-sidebar::-webkit-scrollbar-thumb {
+            background: #293452;
+            border-radius: 10px;
+        }
+
+
+        /* =========================================================
+           SIDEBAR TOP
+        ========================================================= */
+
+        .sidebar-top {
+            padding: 18px 15px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .game-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            color: #ffffff;
+        }
+
+
+        .game-brand-icon {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00bcd4,
+                    #7040d9
+                );
+
+            box-shadow:
+                0 0 15px rgba(0, 212, 255, 0.20);
+
+            flex-shrink: 0;
+        }
+
+
+        .game-brand-icon i {
+            font-size: 21px;
+        }
+
+
+        .game-brand-text {
+            font-size: 17px;
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        .game-brand-subtitle {
+            color: #6f7895;
+            font-size: 10px;
+
+            margin-top: 1px;
+        }
+
+
+        /* =========================================================
+           USER PROFILE
+        ========================================================= */
+
+        .user-section {
+            padding: 15px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 10px;
+        }
+
+
+        .user-info {
+            display: flex;
+            align-items: center;
+
+            min-width: 0;
+        }
+
+
+        .user-icon {
+            color: #00d4ff;
+            font-size: 26px;
+
+            margin-right: 10px;
+
+            flex-shrink: 0;
+        }
+
+
+        .username {
+            color: #ffffff;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+        .user-role {
+            color: #707a98;
+
+            font-size: 11px;
+
+            margin-top: 2px;
+        }
+
+
+        .logout-btn {
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #9ba5c0;
+
+            border-radius: 8px;
+
+            transition: 0.2s ease;
+
+            flex-shrink: 0;
+        }
+
+
+        .logout-btn:hover {
+            color: #ff6b81;
+
+            background: rgba(255, 107, 129, 0.10);
+        }
+
+
+        /* =========================================================
+           STORE
+        ========================================================= */
+
+        .store-section {
+            padding: 12px 15px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+            color: #8d96b2;
+
+            font-size: 12px;
+        }
+
+
+        .store-section i {
+            color: #00d4ff;
+        }
+
+
+        /* =========================================================
+           SIDEBAR NAVIGATION
+        ========================================================= */
+
+        .sidebar-nav {
+            padding: 12px 10px;
+
+            flex: 1;
+        }
+
+
+        .sidebar-nav ul {
+            list-style: none;
+
+            padding: 0;
+            margin: 0;
+        }
+
+
+        .sidebar-nav > ul > li {
+            margin-bottom: 4px;
+        }
+
+
+        .nav-link-main,
+        .menu-toggle {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 11px 12px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: transparent;
+
+            color: #c5ccdd;
+
+            font-size: 14px;
+
+            text-align: left;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+
+        .nav-link-main:hover,
+        .menu-toggle:hover {
+            color: #ffffff;
+
+            background:
+                rgba(0, 212, 255, 0.08);
+        }
+
+
+        .nav-link-main i,
+        .menu-toggle > i {
+            width: 20px;
+
+            color: #00c8e8;
+
+            font-size: 17px;
+
+            flex-shrink: 0;
+        }
+
+
+        .menu-arrow {
+            margin-left: auto;
+
+            font-size: 12px;
+
+            color: #68728e;
+
+            transition: transform 0.2s ease;
+        }
+
+
+        .menu-toggle.active .menu-arrow {
+            transform: rotate(180deg);
+        }
+
+
+        /* =========================================================
+           SUBMENU
+        ========================================================= */
+
+        .submenu {
+            display: none;
+
+            list-style: none;
+
+            margin: 3px 0 6px 0 !important;
+            padding: 3px 0 3px 31px !important;
+
+            border-left: 1px solid rgba(0, 212, 255, 0.18);
+        }
+
+
+        .submenu.show {
+            display: block;
+        }
+
+
+        .submenu li {
+            margin-bottom: 2px;
+        }
+
+
+        .submenu a {
+            display: flex;
+            align-items: center;
+
+            padding: 9px 10px;
+
+            color: #929bb4;
+
+            font-size: 13px;
+
+            border-radius: 6px;
+
+            transition: 0.2s ease;
+        }
+
+
+        .submenu a:hover {
+            color: #ffffff;
+
+            background:
+                rgba(112, 64, 217, 0.12);
+        }
+
+
+        .submenu a i {
+            margin-right: 8px;
+
+            color: #7b8aa8;
+        }
+
+
+        /* =========================================================
+           SUPER ADMIN
+        ========================================================= */
+
+        .superadmin-link {
+            margin-top: 10px;
+
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+            padding-top: 10px;
+        }
+
+
+        .superadmin-link a {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 11px 12px;
+
+            color: #c5ccdd;
+
+            border-radius: 8px;
+
+            font-size: 14px;
+
+            transition: 0.2s ease;
+        }
+
+
+        .superadmin-link a:hover {
+            color: #ffffff;
+
+            background:
+                rgba(112, 64, 217, 0.12);
+        }
+
+
+        .superadmin-link i {
+            color: #9b6cff;
+        }
+
+
+        /* =========================================================
+           MAIN CONTENT
+        ========================================================= */
+
+        .main-wrapper {
+            margin-left: 245px;
+
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+
+            transition: margin-left 0.25s ease;
+        }
+
+
+        .content {
+            width: 100%;
+
+            min-height: 100vh;
+
+            padding: 25px;
+
+            background: #f4f6fb;
+        }
+
+
+        /* =========================================================
+           MOBILE NAVBAR
+        ========================================================= */
+
+        .mobile-navbar {
+            display: none;
+
+            height: 62px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0b1020,
+                    #121a31
+                );
+
+            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+
+            box-shadow:
+                0 3px 15px rgba(0, 0, 0, 0.12);
+        }
+
+
+        .mobile-navbar .navbar-brand {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            color: #ffffff;
+
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+
+        .mobile-brand-icon {
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00bcd4,
+                    #7040d9
+                );
+        }
+
+
+        .mobile-menu-btn {
+            width: 40px;
+            height: 40px;
+
+            border: 1px solid rgba(0, 212, 255, 0.20);
+
+            border-radius: 8px;
+
+            color: #ffffff;
+
+            background: rgba(0, 212, 255, 0.06);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .mobile-menu-btn:hover {
+            background: rgba(0, 212, 255, 0.12);
+        }
+
+
+        /* =========================================================
+           MOBILE OFFCANVAS
+        ========================================================= */
+
+        .mobile-offcanvas {
+            width: 285px !important;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #0b1020,
+                    #10172d
+                );
+
+            color: #ffffff;
+
+            border-right: 1px solid rgba(0, 212, 255, 0.15);
+        }
+
+
+        .mobile-offcanvas .offcanvas-header {
+            padding: 15px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .mobile-offcanvas .offcanvas-title {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+
+        .mobile-offcanvas .offcanvas-body {
+            padding: 0;
+        }
+
+
+        .mobile-user-section {
+            padding: 15px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .mobile-store {
+            padding: 12px 15px;
+
+            color: #8d96b2;
+
+            font-size: 12px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .mobile-store i {
+            color: #00d4ff;
+        }
+
+
+        .mobile-nav {
+            padding: 12px 10px;
+        }
+
+
+        .mobile-nav ul {
+            list-style: none;
+
+            padding: 0;
+            margin: 0;
+        }
+
+
+        .mobile-nav li {
+            margin-bottom: 4px;
+        }
+
+
+        .mobile-nav .nav-link-main,
+        .mobile-nav .menu-toggle {
+            color: #c5ccdd;
+        }
+
+
+        /* =========================================================
+           COLLAPSED DESKTOP SIDEBAR
+        ========================================================= */
+
+        .desktop-sidebar.collapsed {
+            width: 72px;
+            min-width: 72px;
+        }
+
+
+        .desktop-sidebar.collapsed .game-brand-text,
+        .desktop-sidebar.collapsed .game-brand-subtitle,
+        .desktop-sidebar.collapsed .username,
+        .desktop-sidebar.collapsed .user-role,
+        .desktop-sidebar.collapsed .logout-btn,
+        .desktop-sidebar.collapsed .store-section,
+        .desktop-sidebar.collapsed .nav-text,
+        .desktop-sidebar.collapsed .menu-arrow {
+            display: none !important;
+        }
+
+
+        .desktop-sidebar.collapsed .sidebar-top {
+            padding: 18px 16px;
+        }
+
+
+        .desktop-sidebar.collapsed .game-brand {
+            justify-content: center;
+        }
+
+
+        .desktop-sidebar.collapsed .user-section {
+            padding: 15px 10px;
+        }
+
+
+        .desktop-sidebar.collapsed .user-profile {
+            justify-content: center;
+        }
+
+
+        .desktop-sidebar.collapsed .user-icon {
+            margin-right: 0;
+        }
+
+
+        .desktop-sidebar.collapsed .nav-link-main,
+        .desktop-sidebar.collapsed .menu-toggle {
+            justify-content: center;
+
+            padding: 12px 5px;
+        }
+
+
+        .desktop-sidebar.collapsed .nav-link-main i,
+        .desktop-sidebar.collapsed .menu-toggle > i {
+            margin: 0;
+        }
+
+
+        .desktop-sidebar.collapsed .submenu {
+            display: none !important;
+        }
+
+
+        .main-wrapper.sidebar-collapsed {
+            margin-left: 72px;
+        }
+
+
+        /* =========================================================
+           SIDEBAR TOGGLE BUTTON
+        ========================================================= */
+
+        .sidebar-toggle {
+            position: absolute;
+
+            right: 10px;
+            top: 68px;
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid rgba(0, 212, 255, 0.20);
+
+            border-radius: 7px;
+
+            background: #121a31;
+
+            color: #9aa5c1;
+
+            cursor: pointer;
+
+            z-index: 10;
+
+            transition: 0.2s ease;
+        }
+
+
+        .sidebar-toggle:hover {
+            color: #00d4ff;
+
+            border-color: rgba(0, 212, 255, 0.40);
+        }
+
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 767.98px) {
+
+            .desktop-sidebar {
+                display: none;
+            }
+
+
+            .mobile-navbar {
+                display: flex;
+            }
+
+
+            .main-wrapper {
+                margin-left: 0;
+
+                min-height: calc(100vh - 62px);
+            }
+
+
+            .main-wrapper.sidebar-collapsed {
+                margin-left: 0;
+            }
+
+
+            .content {
+                min-height: calc(100vh - 62px);
+
+                padding: 15px;
+            }
+        }
+
+
+        /* =========================================================
+           TABLET
+        ========================================================= */
+
+        @media (min-width: 768px) and (max-width: 991.98px) {
+
+            .desktop-sidebar {
+                width: 215px;
+                min-width: 215px;
+            }
+
+
+            .main-wrapper {
+                margin-left: 215px;
+            }
+
+
+            .content {
+                padding: 20px;
+            }
+        }
+
+
+        /* =========================================================
+           SMALL MOBILE
+        ========================================================= */
+
+        @media (max-width: 380px) {
+
+            .mobile-offcanvas {
+                width: 270px !important;
+            }
+
+
+            .content {
+                padding: 12px;
+            }
+        }
+
+    </style>
+
+    {% block extra_css %}{% endblock %}
+
 </head>
+
+
 <body>
 
-  <!-- MOBILE NAVBAR (only on mobile) -->
-  <nav class="navbar navbar-dark bg-dark d-md-none">
-    <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <span class="navbar-brand ms-2">{{ request.user.username }}</span>
-    </div>
-  </nav>
 
-  <!-- DESKTOP LAYOUT -->
-  <div class="d-block d-md-flex">
-    <!-- DESKTOP SIDEBAR (only md and up) -->
-    <div class="desktop-sidebar d-none d-md-block" id="sidebar">
-      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-      <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
-        <div class="d-flex align-items-center username-text">
-          <i class="bi bi-person-circle me-2 fs-5"></i>
-          <span>{{ request.user.username }}</span>
+    <!-- =========================================================
+         MOBILE NAVBAR
+    ========================================================= -->
+
+    <nav class="navbar mobile-navbar d-md-none">
+
+        <div class="container-fluid px-3">
+
+            <button
+                class="mobile-menu-btn"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#mobileSidebar"
+                aria-controls="mobileSidebar"
+                aria-label="Open menu"
+            >
+                <i class="bi bi-list fs-4"></i>
+            </button>
+
+
+            <a class="navbar-brand ms-2" href="#">
+
+                <span>
+                    {{ request.user.username }}
+                </span>
+
+            </a>
+
         </div>
-        <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
-          <i class="bi bi-box-arrow-right fs-5"></i>
-        </a>
-      </div>
 
-      <div class="sidebar-header small text-center store-info">
-        {% if request.user.store %}
-          🏬 {{ request.user.store.name }}
-        {% endif %}
-      </div>
-      <ul class="nav nav-text">
-        <li class="has-submenu">
-          <a href="" class="menu-toggle">➕ Add Entries ▾</a>
-          <ul class="submenu">
-            <li><a href="{% url 'staff_entry' %}">📝 Reading Entry</a></li>
-            <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
-          </ul>
-        </li>
-        <li class="has-submenu">
-          <a href="" class="menu-toggle">➕ View Entries ▾</a>
-          <ul class="submenu">
-            <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
-            <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
-          </ul>
-        </li>
-        {% if request.user.is_superuser %}
-          <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
-        {% endif %}
-      </ul>
-    </div>
+    </nav>
 
-    <!-- MAIN CONTENT -->
-    <div class="content">
-      {% block content %}{% endblock %}
-    </div>
-  </div>
 
-  <!-- MOBILE OFFCANVAS SIDEBAR -->
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
-    <div class="offcanvas-header bg-dark text-white">
-      <h5 class="offcanvas-title" id="mobileSidebarLabel">{{ request.user.store.name|default:"VideoGame" }}</h5>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body mobile-sidebar">
-      <div class="sidebar-header d-flex align-items-center justify-content-between profile-section">
-        <div class="d-flex align-items-center username-text">
-          <i class="bi bi-person-circle me-2 fs-5"></i>
-          <span>{{ request.user.username }}</span>
+
+    <!-- =========================================================
+         DESKTOP SIDEBAR
+    ========================================================= -->
+
+    <aside
+        class="desktop-sidebar d-none d-md-flex"
+        id="sidebar"
+    >
+
+        <!-- Brand -->
+
+        <div class="sidebar-top">
+
+            <div class="game-brand">
+
+                <div class="game-brand-icon">
+                    <i class="bi bi-controller"></i>
+                </div>
+
+                <div class="game-brand-text-wrapper">
+
+                    <div class="game-brand-text">
+                        Game Management
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-        <a href="{% url 'custom_logout' %}" class="text-light logout-icon" title="Logout">
-          <i class="bi bi-box-arrow-right fs-5"></i>
-        </a>
-      </div>
 
-      <div class="sidebar-header small text-center store-info">
+
+        <!-- User -->
+
+        <div class="user-section">
+
+            <div class="user-profile">
+
+                <div class="user-info">
+
+                    <i class="bi bi-person-circle user-icon"></i>
+
+                    <div class="nav-text">
+
+                        <div class="username">
+                            {{ request.user.username }}
+                        </div>
+
+                        <div class="user-role">
+
+                            {% if request.user.is_superuser %}
+                                Super Admin
+                            {% elif request.user.role %}
+                                {{ request.user.role|title }}
+                            {% else %}
+                                Staff
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="{% url 'custom_logout' %}"
+                    class="logout-btn nav-text"
+                    title="Logout"
+                >
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Store -->
+
         {% if request.user.store %}
-          🏬 {{ request.user.store.name }}
-        {% endif %}
-      </div>
 
-<ul class="nav nav-text">
-  <li class="has-submenu">
-    <button type="button" class="menu-toggle" >➕ Add Entries ▾</button>
-    <ul class="submenu">
-      <li><a href="{% url 'staff_entry' %}">📝 Reading Entry</a></li>
-      <li><a href="{% url 'customer_staff_entry' %}">📝 Customer Entry</a></li>
-    </ul>
-  </li>
-  <li class="has-submenu">
-    <button type="button" class="menu-toggle">➕ View Entries ▾</button>
-    <ul class="submenu">
-      <li><a href="{% url 'staff_entries' %}">📝All Staff Entry</a></li>
-      <li><a href="{% url 'customer_entries' %}">📝All Customer Entry</a></li>
-    </ul>
-  </li>
-  {% if request.user.is_superuser %}
-    <li><a href="{% url 'superadmin_dashboard' %}">🛠️ Superadmin Dashboard</a></li>
-  {% endif %}
-</ul>
+            <div class="store-section">
+
+                <i class="bi bi-shop me-2"></i>
+
+                <span class="nav-text">
+                    {{ request.user.store.name }}
+                </span>
+
+            </div>
+
+        {% endif %}
+
+
+
+        <!-- Navigation -->
+
+        <div class="sidebar-nav">
+
+            <ul>
+
+
+                <!-- Add Entries -->
+
+                <li>
+
+                    <button
+                        type="button"
+                        class="menu-toggle"
+                        onclick="toggleSubmenu(this)"
+                    >
+
+                        <i class="bi bi-plus-circle"></i>
+
+                        <span class="nav-text">
+                            Add Entries
+                        </span>
+
+                        <i class="bi bi-chevron-down menu-arrow"></i>
+
+                    </button>
+
+
+                    <ul class="submenu">
+
+                        <li>
+
+                            <a href="{% url 'staff_entry' %}">
+
+                                <i class="bi bi-pencil-square"></i>
+
+                                <span>
+                                    Reading Entry
+                                </span>
+
+                            </a>
+
+                        </li>
+
+
+                        <li>
+
+                            <a href="{% url 'customer_staff_entry' %}">
+
+                                <i class="bi bi-person-plus"></i>
+
+                                <span>
+                                    Customer Entry
+                                </span>
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </li>
+
+
+
+                <!-- View Entries -->
+
+                <li>
+
+                    <button
+                        type="button"
+                        class="menu-toggle"
+                        onclick="toggleSubmenu(this)"
+                    >
+
+                        <i class="bi bi-folder2-open"></i>
+
+                        <span class="nav-text">
+                            View Entries
+                        </span>
+
+                        <i class="bi bi-chevron-down menu-arrow"></i>
+
+                    </button>
+
+
+                    <ul class="submenu">
+
+                        <li>
+
+                            <a href="{% url 'staff_entries' %}">
+
+                                <i class="bi bi-list-check"></i>
+
+                                <span>
+                                    All Staff Entries
+                                </span>
+
+                            </a>
+
+                        </li>
+
+
+                        <li>
+
+                            <a href="{% url 'customer_entries' %}">
+
+                                <i class="bi bi-people"></i>
+
+                                <span>
+                                    All Customer Entries
+                                </span>
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </li>
+
+
+
+                <!-- Super Admin -->
+
+                {% if request.user.is_superuser %}
+
+                    <li class="superadmin-link">
+
+                        <a href="{% url 'superadmin_dashboard' %}">
+
+                            <i class="bi bi-speedometer2"></i>
+
+                            <span class="nav-text">
+                                Superadmin Dashboard
+                            </span>
+
+                        </a>
+
+                    </li>
+
+                {% endif %}
+
+
+            </ul>
+
+        </div>
+
+
+        <!-- Sidebar Toggle -->
+
+        <button
+            type="button"
+            class="sidebar-toggle"
+            onclick="toggleSidebar()"
+            title="Collapse sidebar"
+            id="sidebarToggle"
+        >
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+    </aside>
+
+
+
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================= -->
+
+    <div
+        class="main-wrapper"
+        id="mainWrapper"
+    >
+
+        <main class="content">
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
 
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-  </script>
-  <script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.menu-toggle').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-    });
-  });
-});
-</script>
+
+
+    <!-- =========================================================
+         MOBILE OFFCANVAS SIDEBAR
+    ========================================================= -->
+
+    <div
+        class="offcanvas offcanvas-start mobile-offcanvas"
+        tabindex="-1"
+        id="mobileSidebar"
+        aria-labelledby="mobileSidebarLabel"
+    >
+
+
+        <!-- Mobile Header -->
+
+        <div class="offcanvas-header">
+
+            <h5
+                class="offcanvas-title"
+                id="mobileSidebarLabel"
+            >
+
+                <span class="mobile-brand-icon">
+                    <i class="bi bi-controller"></i>
+                </span>
+
+                Game Management
+
+            </h5>
+
+
+            <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+            ></button>
+
+        </div>
+
+
+
+        <!-- Mobile Body -->
+
+        <div class="offcanvas-body">
+
+
+            <!-- User -->
+
+            <div class="mobile-user-section">
+
+                <div class="user-profile">
+
+                    <div class="user-info">
+
+                        <i class="bi bi-person-circle user-icon"></i>
+
+                        <div>
+
+                            <div class="username">
+                                {{ request.user.username }}
+                            </div>
+
+                            <div class="user-role">
+
+                                {% if request.user.is_superuser %}
+                                    Super Admin
+                                {% elif request.user.role %}
+                                    {{ request.user.role|title }}
+                                {% else %}
+                                    Staff
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="{% url 'custom_logout' %}"
+                        class="logout-btn"
+                        title="Logout"
+                    >
+
+                        <i class="bi bi-box-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Store -->
+
+            {% if request.user.store %}
+
+                <div class="mobile-store">
+
+                    <i class="bi bi-shop me-2"></i>
+
+                    {{ request.user.store.name }}
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- Mobile Navigation -->
+
+            <div class="mobile-nav">
+
+                <ul>
+
+
+                    <!-- Add Entries -->
+
+                    <li>
+
+                        <button
+                            type="button"
+                            class="menu-toggle"
+                            onclick="toggleSubmenu(this)"
+                        >
+
+                            <i class="bi bi-plus-circle"></i>
+
+                            <span>
+                                Add Entries
+                            </span>
+
+                            <i class="bi bi-chevron-down menu-arrow"></i>
+
+                        </button>
+
+
+                        <ul class="submenu">
+
+                            <li>
+
+                                <a
+                                    href="{% url 'staff_entry' %}"
+                                    onclick="closeMobileSidebar()"
+                                >
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                    Reading Entry
+
+                                </a>
+
+                            </li>
+
+
+                            <li>
+
+                                <a
+                                    href="{% url 'customer_staff_entry' %}"
+                                    onclick="closeMobileSidebar()"
+                                >
+
+                                    <i class="bi bi-person-plus"></i>
+
+                                    Customer Entry
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+
+
+                    <!-- View Entries -->
+
+                    <li>
+
+                        <button
+                            type="button"
+                            class="menu-toggle"
+                            onclick="toggleSubmenu(this)"
+                        >
+
+                            <i class="bi bi-folder2-open"></i>
+
+                            <span>
+                                View Entries
+                            </span>
+
+                            <i class="bi bi-chevron-down menu-arrow"></i>
+
+                        </button>
+
+
+                        <ul class="submenu">
+
+                            <li>
+
+                                <a
+                                    href="{% url 'staff_entries' %}"
+                                    onclick="closeMobileSidebar()"
+                                >
+
+                                    <i class="bi bi-list-check"></i>
+
+                                    All Staff Entries
+
+                                </a>
+
+                            </li>
+
+
+                            <li>
+
+                                <a
+                                    href="{% url 'customer_entries' %}"
+                                    onclick="closeMobileSidebar()"
+                                >
+
+                                    <i class="bi bi-people"></i>
+
+                                    All Customer Entries
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+
+
+                    <!-- Super Admin -->
+
+                    {% if request.user.is_superuser %}
+
+                        <li class="superadmin-link">
+
+                            <a
+                                href="{% url 'superadmin_dashboard' %}"
+                                onclick="closeMobileSidebar()"
+                            >
+
+                                <i class="bi bi-speedometer2"></i>
+
+                                Superadmin Dashboard
+
+                            </a>
+
+                        </li>
+
+                    {% endif %}
+
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         BOOTSTRAP JS
+    ========================================================= -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
+
+    <!-- =========================================================
+         SIDEBAR JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+        function toggleSidebar() {
+
+            const sidebar =
+                document.getElementById("sidebar");
+
+            const mainWrapper =
+                document.getElementById("mainWrapper");
+
+            const toggleButton =
+                document.getElementById("sidebarToggle");
+
+            sidebar.classList.toggle("collapsed");
+
+            mainWrapper.classList.toggle("sidebar-collapsed");
+
+
+            const icon =
+                toggleButton.querySelector("i");
+
+
+            if (sidebar.classList.contains("collapsed")) {
+
+                icon.classList.remove("bi-chevron-left");
+
+                icon.classList.add("bi-chevron-right");
+
+                toggleButton.title =
+                    "Expand sidebar";
+
+            } else {
+
+                icon.classList.remove("bi-chevron-right");
+
+                icon.classList.add("bi-chevron-left");
+
+                toggleButton.title =
+                    "Collapse sidebar";
+            }
+
+        }
+
+
+
+        function toggleSubmenu(button) {
+
+            const submenu =
+                button.nextElementSibling;
+
+
+            if (!submenu) {
+                return;
+            }
+
+
+            const isOpen =
+                submenu.classList.contains("show");
+
+
+            /*
+             * Close other submenus at the same level.
+             */
+
+            const parent =
+                button.parentElement.parentElement;
+
+
+            parent.querySelectorAll(
+                ":scope > li > .submenu.show"
+            ).forEach(function(menu) {
+
+                if (menu !== submenu) {
+
+                    menu.classList.remove("show");
+
+                    const otherButton =
+                        menu.previousElementSibling;
+
+                    if (otherButton) {
+                        otherButton.classList.remove("active");
+                    }
+
+                }
+
+            });
+
+
+            /*
+             * Toggle selected submenu.
+             */
+
+            submenu.classList.toggle(
+                "show",
+                !isOpen
+            );
+
+
+            button.classList.toggle(
+                "active",
+                !isOpen
+            );
+
+        }
+
+
+
+        function closeMobileSidebar() {
+
+            const mobileSidebar =
+                document.getElementById(
+                    "mobileSidebar"
+                );
+
+
+            const offcanvas =
+                bootstrap.Offcanvas.getInstance(
+                    mobileSidebar
+                );
+
+
+            if (offcanvas) {
+                offcanvas.hide();
+            }
+
+        }
+
+    </script>
+
+
+    {% block extra_js %}
+    {% endblock %}
+
 </body>
+
 </html>

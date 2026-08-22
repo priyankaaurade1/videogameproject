@@ -1,160 +1,3062 @@
 {% extends 'base.html' %}
+
 {% load static %}
+
 {% block page_title %}All Customer Entries{% endblock %}
+
 {% block content %}
 
-<form style="display:none;">{% csrf_token %}</form>
+<style>
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4"><h2 class="mb-0">All Customer Entries</h2></div>
-  <div class="card mb-3"><div class="card-body"><div class="row g-2 align-items-end"><div class="col-md-4"><label class="form-label">Bill No.</label><input type="text" id="filterBillNo" class="form-control" placeholder="Enter Bill No."></div><div class="col-md-3"><label class="form-label">From Date</label>
-    <input type="date" id="filterFromDate" class="form-control" value="{{ now|date:'Y-m-d' }}"></div>
-    <div class="col-md-3"><label class="form-label">To Date</label>
-      <input type="date" id="filterToDate" class="form-control" value="{{ now|date:'Y-m-d' }}"></div>
-  <div class="col-md-2 d-flex gap-1"><button type="button" id="applyFilter" class="btn btn-primary">🔎 Filter</button><button type="button" id="clearFilter" class="btn btn-secondary">↻</button><button type="button" id="downloadPdf" class="btn btn-danger">📄 PDF</button></div>
-  </div></div></div>
-    <div id="statusMessage" style="display:none;font-weight:bold;margin-bottom:15px;"></div>
+    /* =========================================================
+       PAGE
+    ========================================================= */
 
-    <div id="printableArea">
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark"><tr><th>#</th><th>Staff</th><th>Customer</th><th>Machine</th><th>In</th><th>Out</th><th>Expense</th><th>Expense Amount</th><th>Good Luck</th><th>Bill No</th><th>Date & Time</th><th>Action</th></tr></thead>
-                <tbody id="entriesTable">
-                    {% for entry in entries %}
-                    <tr id="entryRow-{{ entry.id }}" class="entry-row"><td>{{ forloop.counter }}</td><td>{{ entry.staff.username }}</td><td>{{ entry.customer_name }}</td><td>{% if entry.machine %}{{ entry.machine.name }} - {{ entry.machine.number }} ({{ entry.machine.store.name }}){% else %}-{% endif %}</td><td>{{ entry.in_points }}</td><td>{{ entry.out_points }}</td><td>{{ entry.get_expense_type_display }}</td><td>{{ entry.expense_amt }}</td><td>{{ entry.good_luck }}</td><td>{{ entry.bill_no }}</td><td>{{ entry.date|date:"Y-m-d" }}<br><small>{{ entry.time|time:"H:i:s" }}</small></td><td><div class="d-flex gap-1"><button type="button" class="btn btn-info btn-sm viewBtn" data-entry-id="{{ entry.id }}">👁</button><button type="button" class="btn btn-warning btn-sm editBtn" data-entry-id="{{ entry.id }}">✏️</button><button type="button" class="btn btn-danger btn-sm deleteBtn" data-entry-id="{{ entry.id }}">🗑️</button></div></td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <nav><ul class="pagination justify-content-center mt-4" id="pagination"></ul></nav>
-    </div>
-</div>
-
-<!-- VIEW MODAL -->
-<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">👁 Customer Entry</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <div class="row">
-                <div class="col-6 mb-3"><strong>Staff</strong><div id="view_staff">-</div></div>
-                <div class="col-6 mb-3"><strong>Customer ID</strong><div id="view_customer_id">-</div></div>
-                <div class="col-6 mb-3"><strong>Customer Name</strong><div id="view_customer_name">-</div></div>
-                <div class="col-6 mb-3"><strong>Machine</strong><div id="view_machine">-</div></div>
-                <div class="col-6 mb-3"><strong>In Points</strong><div id="view_in_points">-</div></div>
-                <div class="col-6 mb-3"><strong>Out Points</strong><div id="view_out_points">-</div></div>
-                <div class="col-6 mb-3"><strong>Expense Type</strong><div id="view_expense_type">-</div></div>
-                <div class="col-6 mb-3"><strong>Expense Amount</strong><div id="view_expense_amt">-</div></div>
-                <div class="col-6 mb-3"><strong>Good Luck</strong><div id="view_good_luck">-</div></div>
-                <div class="col-6 mb-3"><strong>Bill No</strong><div id="view_bill_no">-</div></div>
-                <div class="col-6 mb-3"><strong>Date</strong><div id="view_date">-</div></div>
-                <div class="col-6 mb-3"><strong>Time</strong><div id="view_time">-</div></div>
-                <div class="col-12 mb-3"><strong>Remarks</strong><div id="view_remarks">-</div></div>
-            </div>
-        </div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
-    </div></div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">✏️ Edit Customer Entry</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <form id="editForm">
-            {% csrf_token %}
-            <input type="hidden" name="entry_id" id="edit_entry_id">
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3"><label class="form-label">Customer Name</label><input type="text" class="form-control" name="customer_name" id="edit_customer_name" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Machine</label><select class="form-select" name="machine" id="edit_machine" required>{% for machine in machines %}<option value="{{ machine.id }}">{{ machine.name }} - {{ machine.number }} ({{ machine.store.name }})</option>{% endfor %}</select></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">In Points</label><input type="number" class="form-control" name="in_points" id="edit_in_points" min="0" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Out Points</label><input type="number" class="form-control" name="out_points" id="edit_out_points" min="0" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Expense Type</label><select class="form-select" name="expense_type" id="edit_expense_type" required><option value="salary">Salary</option><option value="tea">Tea</option><option value="water">Water</option><option value="lightbill">Light Bill</option><option value="police">Police</option><option value="goodluck">Good Luck</option><option value="other">Other</option></select></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Expense Amount</label><input type="number" class="form-control" name="expense_amt" id="edit_expense_amt" min="0" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Good Luck</label><input type="number" class="form-control" name="goodluck_amt" id="edit_goodluck_amt" min="0"></div>
-                    <div class="col-md-6 mb-3" id="edit_remarks_group" style="display:none;"><label class="form-label">Remarks</label><textarea class="form-control" name="remarks" id="edit_remarks" rows="3"></textarea></div>
-                </div>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">💾 Update</button></div>
-        </form>
-    </div></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.getElementById('downloadPdf').addEventListener('click',function(){const billNo=document.getElementById('filterBillNo').value.trim();const fromDate=document.getElementById('filterFromDate').value;const toDate=document.getElementById('filterToDate').value;const params=new URLSearchParams();if(billNo)params.append('bill_no',billNo);if(fromDate)params.append('from_date',fromDate);if(toDate)params.append('to_date',toDate);window.location.href="{% url 'export_customer_entries_pdf' %}?"+params.toString();});
-document.addEventListener('DOMContentLoaded', function () {
-  function applyFilters() {
-        const billNo = document.getElementById('filterBillNo').value.trim().toLowerCase();
-        const fromDate = document.getElementById('filterFromDate').value;
-        const toDate = document.getElementById('filterToDate').value;
-
-        filteredRows = rows.filter(row => {
-            const entryId = row.id.replace('entryRow-', '');
-            const entry = entries[entryId];
-            if(!entry) return false;
-
-            const billMatch = !billNo || entry.bill_no.toLowerCase().includes(billNo);
-            const fromMatch = !fromDate || entry.date >= fromDate;
-            const toMatch = !toDate || entry.date <= toDate;
-
-            return billMatch && fromMatch && toMatch;
-        });
-
-        createPaginationButtons();
-        showPage(1);
-    }
-    const rowsPerPage = 10;
-    const rows = Array.from(document.querySelectorAll('.entry-row'));
-    const pagination = document.getElementById('pagination');
-    const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
-    let filteredRows = [...rows];
-
-    function showPage(page) {
-        rows.forEach(row => row.style.display = 'none');
-        filteredRows.forEach((row,index) => {
-            if(index >= (page-1)*rowsPerPage && index < page*rowsPerPage) row.style.display = '';
-        });
+    .customer-entries-page {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 5px 4px 25px;
     }
 
-    function createPaginationButtons() {
-        const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-        pagination.innerHTML = '';
-        for(let i=1;i<=totalPages;i++) {
-            const li=document.createElement('li');
-            li.className='page-item';
-            li.innerHTML=`<a class="page-link" href="#">${i}</a>`;
-            li.addEventListener('click',function(e) {
-                e.preventDefault();
-                showPage(i);
-                document.querySelectorAll('.page-item').forEach(item=>item.classList.remove('active'));
-                li.classList.add('active');
-            });
-            pagination.appendChild(li);
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .customer-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 12px;
+
+        margin-bottom: 16px;
+    }
+
+
+    .customer-heading {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+    }
+
+
+    .customer-heading-icon {
+        width: 42px;
+        height: 42px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: linear-gradient(
+            135deg,
+            #00bcd4,
+            #7040d9
+        );
+
+        color: #ffffff;
+
+        font-size: 19px;
+
+        flex-shrink: 0;
+    }
+
+
+    .customer-heading h2 {
+        margin: 0;
+
+        color: #151b2e;
+
+        font-size: 21px;
+
+        font-weight: 700;
+    }
+
+
+    .customer-heading p {
+        margin: 2px 0 0;
+
+        color: #7c8598;
+
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       FILTER CARD
+    ========================================================= */
+
+    .customer-filter-card {
+
+        background: #ffffff;
+
+        border: 1px solid #e3e7ee;
+
+        border-radius: 10px;
+
+        padding: 15px;
+
+        margin-bottom: 14px;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    .customer-filter-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #3f485b;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    .customer-filter-control {
+
+        width: 100%;
+
+        height: 40px;
+
+        padding: 7px 9px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        color: #30374a;
+
+        font-size: 13px;
+    }
+
+
+    .customer-filter-control:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    /* =========================================================
+       FILTER BUTTONS
+    ========================================================= */
+
+    .customer-filter-btn,
+    .customer-clear-btn,
+    .customer-pdf-btn {
+
+        height: 40px;
+
+        border-radius: 7px;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+
+    .customer-filter-btn {
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        border: none;
+
+        color: #ffffff;
+    }
+
+
+    .customer-filter-btn:hover {
+
+        color: #ffffff;
+
+        opacity: 0.92;
+    }
+
+
+    .customer-clear-btn {
+
+        background: #f1f3f6;
+
+        border: 1px solid #dfe3eb;
+
+        color: #4f586b;
+    }
+
+
+    .customer-clear-btn:hover {
+
+        background: #e7eaf0;
+
+        color: #30374a;
+    }
+
+
+    .customer-pdf-btn {
+
+        background: #dc3545;
+
+        border: none;
+
+        color: #ffffff;
+
+        padding: 7px 14px;
+    }
+
+
+    .customer-pdf-btn:hover {
+
+        background: #c82333;
+
+        color: #ffffff;
+    }
+
+
+    /* =========================================================
+       STATUS
+    ========================================================= */
+
+    #statusMessage {
+
+        padding: 8px 10px;
+
+        margin-bottom: 12px;
+
+        border-radius: 7px;
+
+        background: #ecfdf3;
+
+        border: 1px solid #ccebd8;
+
+        color: #198754;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        text-align: center;
+    }
+
+
+    /* =========================================================
+       TABLE CARD
+    ========================================================= */
+
+    .customer-table-card {
+
+        background: #ffffff;
+
+        border: 1px solid #e3e7ee;
+
+        border-radius: 10px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 4px 18px rgba(25, 35, 60, 0.05);
+    }
+
+
+    .customer-table-scroll {
+
+        width: 100%;
+
+        max-height: 70vh;
+
+        overflow-x: auto;
+
+        overflow-y: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .customer-entries-table {
+
+        width: 100%;
+
+        min-width: 1250px;
+
+        margin: 0;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+        font-size: 13px;
+    }
+
+
+    .customer-entries-table th {
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 5;
+
+        padding: 11px 10px;
+
+        background: #11182e;
+
+        color: #ffffff;
+
+        border-color: #2b3552;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        text-align: center;
+    }
+
+
+    .customer-entries-table td {
+
+        padding: 9px 10px;
+
+        color: #3f4759;
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        vertical-align: middle;
+
+        white-space: nowrap;
+
+        text-align: center;
+
+        border-color: #e5e8ee;
+    }
+
+
+    .customer-entries-table tbody tr:hover {
+
+        background: #f5fbfd;
+    }
+
+
+    .customer-entries-table tbody tr:nth-child(even) {
+
+        background: #fafbfd;
+    }
+
+
+    .customer-entries-table tbody tr:nth-child(even):hover {
+
+        background: #f3fafc;
+    }
+
+
+    /* =========================================================
+       IMPORTANT VALUES
+    ========================================================= */
+
+    .points-value {
+
+        color: #20263a;
+
+        font-size: 13px;
+
+        font-weight: 700;
+    }
+
+
+    .bill-value {
+
+        color: #008ca3;
+
+        font-weight: 700;
+    }
+
+
+    .customer-name-value {
+
+        color: #30374a;
+
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       ACTION BUTTONS
+    ========================================================= */
+
+    .customer-action-btn {
+
+        width: 34px;
+
+        height: 34px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 0;
+
+        border-radius: 6px;
+
+        font-size: 13px;
+
+        margin: 1px;
+    }
+
+
+    /* =========================================================
+       PAGINATION
+    ========================================================= */
+
+    .customer-pagination-area {
+
+        padding: 12px;
+
+        background: #ffffff;
+
+        border-top: 1px solid #e5e8ee;
+    }
+
+
+    .pagination {
+
+        margin: 0;
+    }
+
+
+    .pagination .page-link {
+
+        color: #46506a;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        border-color: #dfe3eb;
+
+        min-width: 34px;
+
+        text-align: center;
+    }
+
+
+    .pagination .active .page-link {
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        border-color: #00a8cc;
+
+        color: #ffffff;
+    }
+
+
+    /* =========================================================
+       MODALS
+    ========================================================= */
+
+    .customer-modal .modal-content {
+
+        border: none;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 15px 45px rgba(0, 0, 0, 0.18);
+    }
+
+
+    .customer-modal .modal-header {
+
+        background: #11182e;
+
+        color: #ffffff;
+
+        padding: 13px 16px;
+
+        border-bottom: 1px solid #27314d;
+    }
+
+
+    .customer-modal .modal-title {
+
+        font-size: 16px;
+
+        font-weight: 600;
+    }
+
+
+    .customer-modal .modal-body {
+
+        padding: 16px;
+    }
+
+
+    .detail-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #515a6e;
+
+        font-size: 11px;
+
+        font-weight: 600;
+    }
+
+
+    .detail-value {
+
+        min-height: 38px;
+
+        display: flex;
+
+        align-items: center;
+
+        padding: 7px 9px;
+
+        border: 1px solid #e1e5eb;
+
+        border-radius: 6px;
+
+        background: #f7f8fa;
+
+        color: #30374a;
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        word-break: break-word;
+    }
+
+
+    .customer-modal .modal-footer {
+
+        padding: 10px 16px;
+
+        border-top: 1px solid #e5e8ee;
+    }
+
+
+    /* =========================================================
+       EDIT FORM
+    ========================================================= */
+
+    .edit-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #3f485b;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    .edit-control {
+
+        width: 100%;
+
+        min-height: 41px;
+
+        padding: 7px 9px;
+
+        border: 1px solid #dfe3eb;
+
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        color: #30374a;
+
+        font-size: 13px;
+    }
+
+
+    .edit-control:focus {
+
+        outline: none;
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 188, 212, 0.10);
+    }
+
+
+    .edit-control[type="number"] {
+
+        font-weight: 600;
+    }
+
+
+    .edit-modal .modal-header {
+
+        background: #11182e;
+    }
+
+
+    .update-btn {
+
+        background: linear-gradient(
+            90deg,
+            #00a8cc,
+            #7040d9
+        );
+
+        border: none;
+
+        color: #ffffff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+    }
+
+
+    .update-btn:hover {
+
+        color: #ffffff;
+
+        opacity: 0.92;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 767.98px) {
+
+        .customer-entries-page {
+
+            padding: 2px 2px 20px;
         }
-        if(pagination.firstChild) pagination.firstChild.classList.add('active');
+
+
+        .customer-page-header {
+
+            margin-bottom: 12px;
+        }
+
+
+        .customer-heading {
+
+            gap: 7px;
+        }
+
+
+        .customer-heading-icon {
+
+            width: 36px;
+
+            height: 36px;
+
+            font-size: 16px;
+        }
+
+
+        .customer-heading h2 {
+
+            font-size: 18px;
+        }
+
+
+        .customer-heading p {
+
+            display: none;
+        }
+
+
+        .customer-filter-card {
+
+            padding: 11px;
+
+            border-radius: 9px;
+        }
+
+
+        .customer-filter-label {
+
+            font-size: 11px;
+
+            margin-bottom: 3px;
+        }
+
+
+        .customer-filter-control {
+
+            height: 39px;
+
+            font-size: 12px;
+
+            padding: 6px 7px;
+        }
+
+
+        .customer-filter-btn,
+        .customer-clear-btn,
+        .customer-pdf-btn {
+
+            height: 39px;
+
+            font-size: 11px;
+        }
+
+
+        .customer-pdf-btn {
+
+            width: 100%;
+
+            margin-top: 8px;
+        }
+
+
+        .customer-table-card {
+
+            border-radius: 8px;
+        }
+
+
+        .customer-table-scroll {
+
+            max-height: 65vh;
+        }
+
+
+        .customer-entries-table {
+
+            min-width: 1250px;
+
+            font-size: 13px;
+        }
+
+
+        .customer-entries-table th {
+
+            padding: 10px 9px;
+
+            font-size: 12px;
+        }
+
+
+        .customer-entries-table td {
+
+            padding: 9px;
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+
+        .points-value {
+
+            font-size: 13px;
+        }
+
+
+        .customer-action-btn {
+
+            width: 34px;
+
+            height: 34px;
+
+            font-size: 13px;
+        }
+
+
+        .customer-pagination-area {
+
+            padding: 10px 5px;
+        }
+
+
+        .customer-modal .modal-body {
+
+            padding: 12px;
+        }
+
+
+        .detail-value {
+
+            min-height: 38px;
+
+            font-size: 12px;
+
+            padding: 7px 8px;
+        }
+
+
+        .detail-label {
+
+            font-size: 10px;
+        }
+
+
+        .edit-label {
+
+            font-size: 11px;
+        }
+
+
+        .edit-control {
+
+            min-height: 39px;
+
+            font-size: 12px;
+        }
+
     }
-    document.getElementById('filterBillNo').addEventListener('input', applyFilters);
-    document.getElementById('filterFromDate').addEventListener('change', applyFilters);
-    document.getElementById('filterToDate').addEventListener('change', applyFilters);
-    document.getElementById('applyFilter').addEventListener('click', applyFilters);
-  
-    const entries = {
-        {% for entry in entries %}
-        "{{ entry.id }}": { id:"{{ entry.id }}", staff:"{{ entry.staff.username|escapejs }}", customer_id:"{{ entry.customer_id|escapejs }}", customer_name:"{{ entry.customer_name|escapejs }}", machine:"{% if entry.machine %}{{ entry.machine.name|escapejs }} - {{ entry.machine.number|escapejs }}{% else %}-{% endif %}", machine_id:"{% if entry.machine %}{{ entry.machine.id }}{% endif %}", in_points:"{{ entry.in_points }}", out_points:"{{ entry.out_points }}", expense_type:"{{ entry.expense_type|escapejs }}", expense_type_display:"{{ entry.get_expense_type_display|escapejs }}", expense_amt:"{{ entry.expense_amt }}", good_luck:"{{ entry.good_luck }}", bill_no:"{{ entry.bill_no|escapejs }}", date:"{{ entry.date|date:'Y-m-d' }}", time:"{{ entry.time|time:'H:i:s' }}", remarks:"{{ entry.remarks|default:''|escapejs }}" },
-        {% endfor %}
-    };
-    if(rows.length>0){applyFilters();}
-    document.querySelectorAll('.viewBtn').forEach(button => { button.addEventListener('click',function(){const entry=entries[this.dataset.entryId];if(!entry)return;document.getElementById('view_staff').innerText=entry.staff;document.getElementById('view_customer_id').innerText=entry.customer_id;document.getElementById('view_customer_name').innerText=entry.customer_name;document.getElementById('view_machine').innerText=entry.machine;document.getElementById('view_in_points').innerText=entry.in_points;document.getElementById('view_out_points').innerText=entry.out_points;document.getElementById('view_expense_type').innerText=entry.expense_type_display;document.getElementById('view_expense_amt').innerText=entry.expense_amt;document.getElementById('view_good_luck').innerText=entry.good_luck;document.getElementById('view_bill_no').innerText=entry.bill_no;document.getElementById('view_date').innerText=entry.date;document.getElementById('view_time').innerText=entry.time;document.getElementById('view_remarks').innerText=entry.remarks||'-';new bootstrap.Modal(document.getElementById('viewModal')).show();}); });
 
-    const editExpenseType = document.getElementById('edit_expense_type');
-    const editRemarksGroup = document.getElementById('edit_remarks_group');
-    function toggleEditRemarks(){if(editExpenseType.value==='other'){editRemarksGroup.style.display='block';}else{editRemarksGroup.style.display='none';document.getElementById('edit_remarks').value='';}}
-    editExpenseType.addEventListener('change',toggleEditRemarks);
 
-    document.querySelectorAll('.editBtn').forEach(button => { button.addEventListener('click',function(){const entry=entries[this.dataset.entryId];if(!entry)return;document.getElementById('edit_entry_id').value=entry.id;document.getElementById('edit_customer_name').value=entry.customer_name;document.getElementById('edit_machine').value=entry.machine_id;document.getElementById('edit_in_points').value=entry.in_points;document.getElementById('edit_out_points').value=entry.out_points;document.getElementById('edit_expense_type').value=entry.expense_type;document.getElementById('edit_expense_amt').value=entry.expense_amt;document.getElementById('edit_goodluck_amt').value=entry.good_luck;document.getElementById('edit_remarks').value=entry.remarks;toggleEditRemarks();new bootstrap.Modal(document.getElementById('editModal')).show();}); });
-    document.getElementById('editForm').addEventListener('submit',async function(e){e.preventDefault();const formData=new FormData(this);try{const response=await fetch("{% url 'customer_staff_entry' %}",{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body:formData});if(!response.ok)throw new Error(`HTTP ${response.status}`);const result=await response.json();if(result.success){await Swal.fire({icon:'success',title:'Updated!',text:'Entry updated successfully.',timer:1500,showConfirmButton:false});location.reload();}else{throw new Error(result.error||'Update failed');}}catch(error){console.error('Update error:',error);Swal.fire({icon:'error',title:'Update Failed',text:error.message||'Failed to update entry.'});}});
-    document.querySelectorAll('.deleteBtn').forEach(button=>{button.addEventListener('click',async function(){const id=this.dataset.entryId;const confirmResult=await Swal.fire({title:'Delete Entry?',text:'Are you sure you want to delete this entry? This action cannot be undone.',icon:'warning',showCancelButton:true,confirmButtonText:'Yes, Delete',cancelButtonText:'Cancel',confirmButtonColor:'#d33',cancelButtonColor:'#6c757d'});if(!confirmResult.isConfirmed)return;try{const response=await fetch('',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrfToken},body:new URLSearchParams({'action':'delete','entry_id':id,'csrfmiddlewaretoken':csrfToken})});if(!response.ok)throw new Error(`HTTP ${response.status}`);const result=await response.json();if(result.success){document.getElementById(`entryRow-${id}`).remove();await Swal.fire({icon:'success',title:'Deleted!',text:'Entry deleted successfully.',timer:1500,showConfirmButton:false});location.reload();}else{throw new Error(result.error||'Failed to delete entry.');}}catch(error){console.error('Delete error:',error);Swal.fire({icon:'error',title:'Delete Failed',text:error.message||'Failed to delete entry.'});}});});
-     
-     });
+    /* =========================================================
+       VERY SMALL PHONES
+    ========================================================= */
+
+    @media (max-width: 380px) {
+
+        .customer-heading h2 {
+
+            font-size: 17px;
+        }
+
+
+        .customer-filter-card {
+
+            padding: 9px;
+        }
+
+
+        .customer-filter-label {
+
+            font-size: 10px;
+        }
+
+
+        .customer-filter-control {
+
+            font-size: 11px;
+        }
+
+
+        .customer-entries-table th {
+
+            font-size: 11px;
+        }
+
+
+        .customer-entries-table td {
+
+            font-size: 12px;
+        }
+
+    }
+
+</style>
+
+
+<div class="customer-entries-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <div class="customer-page-header">
+
+        <div class="customer-heading">
+
+            <div class="customer-heading-icon">
+
+                <i class="bi bi-people"></i>
+
+            </div>
+
+
+            <div>
+
+                <h2>
+                    All Customer Entries
+                </h2>
+
+                <p>
+                    View, filter and manage customer records
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         CSRF
+    ===================================================== -->
+
+    <form style="display:none;">
+        {% csrf_token %}
+    </form>
+
+
+
+    <!-- =====================================================
+         FILTERS
+    ===================================================== -->
+
+    <div class="customer-filter-card">
+
+        <div class="row g-2 align-items-end">
+
+
+            <!-- BILL NUMBER -->
+
+            <div class="col-6 col-md-4">
+
+                <label class="customer-filter-label">
+                    Bill No.
+                </label>
+
+
+                <input
+                    type="text"
+                    id="filterBillNo"
+                    class="customer-filter-control"
+                    placeholder="Enter Bill No."
+                >
+
+            </div>
+
+
+
+            <!-- FROM DATE -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="customer-filter-label">
+                    From Date
+                </label>
+
+
+                <input
+                    type="date"
+                    id="filterFromDate"
+                    class="customer-filter-control"
+                    value="{{ now|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+
+            <!-- TO DATE -->
+
+            <div class="col-6 col-md-3">
+
+                <label class="customer-filter-label">
+                    To Date
+                </label>
+
+
+                <input
+                    type="date"
+                    id="filterToDate"
+                    class="customer-filter-control"
+                    value="{{ now|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+
+            <!-- BUTTONS -->
+
+            <div class="col-6 col-md-2 d-flex gap-1">
+
+                <button
+                    type="button"
+                    id="applyFilter"
+                    class="btn customer-filter-btn w-100"
+                    title="Filter"
+                >
+
+                    <i class="bi bi-search"></i>
+
+                    <span class="d-none d-lg-inline ms-1">
+                        Filter
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="clearFilter"
+                    class="btn customer-clear-btn"
+                    title="Clear"
+                >
+
+                    <i class="bi bi-arrow-counterclockwise"></i>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="downloadPdf"
+                    class="btn customer-pdf-btn"
+                    title="Download PDF"
+                >
+
+                    <i class="bi bi-file-earmark-pdf"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         STATUS
+    ===================================================== -->
+
+    <div
+        id="statusMessage"
+        style="display:none;"
+    ></div>
+
+
+
+    <!-- =====================================================
+         TABLE
+    ===================================================== -->
+
+    <div
+        id="printableArea"
+        class="customer-table-card"
+    >
+
+        <div class="customer-table-scroll">
+
+            <table
+                class="table table-bordered customer-entries-table"
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Staff</th>
+
+                        <th>Customer</th>
+
+                        <th>Machine</th>
+
+                        <th>In</th>
+
+                        <th>Out</th>
+
+                        <th>Expense</th>
+
+                        <th>Expense Amount</th>
+
+                        <th>Good Luck</th>
+
+                        <th>Bill No</th>
+
+                        <th>Date &amp; Time</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="entriesTable">
+
+                    {% for entry in entries %}
+
+                    <tr
+                        id="entryRow-{{ entry.id }}"
+                        class="entry-row"
+                    >
+
+                        <td>
+                            {{ forloop.counter }}
+                        </td>
+
+
+                        <td>
+                            {{ entry.staff.username }}
+                        </td>
+
+
+                        <td class="customer-name-value">
+                            {{ entry.customer_name }}
+                        </td>
+
+
+                        <td>
+
+                            {% if entry.machine %}
+
+                                {{ entry.machine.name }} -
+                                {{ entry.machine.number }}
+
+                                ({{ entry.machine.store.name }})
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="points-value">
+                            {{ entry.in_points }}
+                        </td>
+
+
+                        <td class="points-value">
+                            {{ entry.out_points }}
+                        </td>
+
+
+                        <td>
+                            {{ entry.get_expense_type_display }}
+                        </td>
+
+
+                        <td class="points-value">
+                            {{ entry.expense_amt }}
+                        </td>
+
+
+                        <td class="points-value">
+                            {{ entry.good_luck }}
+                        </td>
+
+
+                        <td class="bill-value">
+                            {{ entry.bill_no }}
+                        </td>
+
+
+                        <td>
+
+                            {{ entry.date|date:"Y-m-d" }}
+
+                            <br>
+
+                            <small>
+                                {{ entry.time|time:"H:i:s" }}
+                            </small>
+
+                        </td>
+
+
+                        <!-- ACTION -->
+
+                        <td>
+
+                            <div class="d-flex gap-1">
+
+
+                                <!-- VIEW -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-info customer-action-btn viewBtn"
+                                    data-entry-id="{{ entry.id }}"
+                                    title="View"
+                                >
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+
+
+                                <!-- EDIT -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-warning customer-action-btn editBtn"
+                                    data-entry-id="{{ entry.id }}"
+                                    title="Edit"
+                                >
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </button>
+
+
+
+                                <!-- DELETE -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-danger customer-action-btn deleteBtn"
+                                    data-entry-id="{{ entry.id }}"
+                                    title="Delete"
+                                >
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- =================================================
+             PAGINATION
+        ================================================= -->
+
+        <div class="customer-pagination-area">
+
+            <nav>
+
+                <ul
+                    class="pagination justify-content-center"
+                    id="pagination"
+                ></ul>
+
+            </nav>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     VIEW MODAL
+========================================================= -->
+
+<div
+    class="modal fade customer-modal"
+    id="viewModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <!-- HEADER -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    <i class="bi bi-eye me-2"></i>
+
+                    Customer Entry
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+
+
+            <!-- BODY -->
+
+            <div class="modal-body">
+
+                <div class="row g-2">
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Staff
+                        </span>
+
+                        <div
+                            id="view_staff"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Customer ID
+                        </span>
+
+                        <div
+                            id="view_customer_id"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Customer Name
+                        </span>
+
+                        <div
+                            id="view_customer_name"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Machine
+                        </span>
+
+                        <div
+                            id="view_machine"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            In Points
+                        </span>
+
+                        <div
+                            id="view_in_points"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Out Points
+                        </span>
+
+                        <div
+                            id="view_out_points"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Expense Type
+                        </span>
+
+                        <div
+                            id="view_expense_type"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Expense Amount
+                        </span>
+
+                        <div
+                            id="view_expense_amt"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Good Luck
+                        </span>
+
+                        <div
+                            id="view_good_luck"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Bill No
+                        </span>
+
+                        <div
+                            id="view_bill_no"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Date
+                        </span>
+
+                        <div
+                            id="view_date"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-6">
+
+                        <span class="detail-label">
+                            Time
+                        </span>
+
+                        <div
+                            id="view_time"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <span class="detail-label">
+                            Remarks
+                        </span>
+
+                        <div
+                            id="view_remarks"
+                            class="detail-value"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    data-bs-dismiss="modal"
+                >
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     EDIT MODAL
+========================================================= -->
+
+<div
+    class="modal fade customer-modal edit-modal"
+    id="editModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <!-- HEADER -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    <i class="bi bi-pencil me-2"></i>
+
+                    Edit Customer Entry
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+
+
+            <!-- FORM -->
+
+            <form id="editForm">
+
+                {% csrf_token %}
+
+
+                <input
+                    type="hidden"
+                    name="entry_id"
+                    id="edit_entry_id"
+                >
+
+
+                <div class="modal-body">
+
+                    <div class="row g-2">
+
+
+                        <!-- CUSTOMER NAME -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Customer Name
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="edit-control"
+                                name="customer_name"
+                                id="edit_customer_name"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- MACHINE -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Machine
+                            </label>
+
+
+                            <select
+                                class="edit-control"
+                                name="machine"
+                                id="edit_machine"
+                                required
+                            >
+
+                                {% for machine in machines %}
+
+                                <option
+                                    value="{{ machine.id }}"
+                                >
+
+                                    {{ machine.name }} -
+                                    {{ machine.number }}
+
+                                    ({{ machine.store.name }})
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- IN POINTS -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                In Points
+                            </label>
+
+
+                            <input
+                                type="number"
+                                class="edit-control"
+                                name="in_points"
+                                id="edit_in_points"
+                                min="0"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- OUT POINTS -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Out Points
+                            </label>
+
+
+                            <input
+                                type="number"
+                                class="edit-control"
+                                name="out_points"
+                                id="edit_out_points"
+                                min="0"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- EXPENSE TYPE -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Expense Type
+                            </label>
+
+
+                            <select
+                                class="edit-control"
+                                name="expense_type"
+                                id="edit_expense_type"
+                                required
+                            >
+
+                                <option value="salary">
+                                    Salary
+                                </option>
+
+                                <option value="tea">
+                                    Tea
+                                </option>
+
+                                <option value="water">
+                                    Water
+                                </option>
+
+                                <option value="lightbill">
+                                    Light Bill
+                                </option>
+
+                                <option value="police">
+                                    Police
+                                </option>
+
+                                <option value="goodluck">
+                                    Good Luck
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- EXPENSE AMOUNT -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Expense Amount
+                            </label>
+
+
+                            <input
+                                type="number"
+                                class="edit-control"
+                                name="expense_amt"
+                                id="edit_expense_amt"
+                                min="0"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- GOOD LUCK -->
+
+                        <div class="col-6">
+
+                            <label class="edit-label">
+                                Good Luck
+                            </label>
+
+
+                            <input
+                                type="number"
+                                class="edit-control"
+                                name="goodluck_amt"
+                                id="edit_goodluck_amt"
+                                min="0"
+                            >
+
+                        </div>
+
+
+
+                        <!-- REMARKS -->
+
+                        <div
+                            class="col-6"
+                            id="edit_remarks_group"
+                            style="display:none;"
+                        >
+
+                            <label class="edit-label">
+                                Remarks
+                            </label>
+
+
+                            <textarea
+                                class="edit-control"
+                                name="remarks"
+                                id="edit_remarks"
+                                rows="2"
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn update-btn"
+                    >
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        Update
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     SWEET ALERT
+========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+<script>
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+
+        /* =====================================================
+           PDF
+        ===================================================== */
+
+        document
+            .getElementById('downloadPdf')
+            .addEventListener(
+                'click',
+                function () {
+
+
+                    const billNo =
+                        document
+                            .getElementById(
+                                'filterBillNo'
+                            )
+                            .value
+                            .trim();
+
+
+                    const fromDate =
+                        document
+                            .getElementById(
+                                'filterFromDate'
+                            )
+                            .value;
+
+
+                    const toDate =
+                        document
+                            .getElementById(
+                                'filterToDate'
+                            )
+                            .value;
+
+
+                    const params =
+                        new URLSearchParams();
+
+
+                    if (billNo) {
+
+                        params.append(
+                            'bill_no',
+                            billNo
+                        );
+
+                    }
+
+
+                    if (fromDate) {
+
+                        params.append(
+                            'from_date',
+                            fromDate
+                        );
+
+                    }
+
+
+                    if (toDate) {
+
+                        params.append(
+                            'to_date',
+                            toDate
+                        );
+
+                    }
+
+
+                    window.location.href =
+                        "{% url 'export_customer_entries_pdf' %}?" +
+                        params.toString();
+
+                }
+            );
+
+
+
+        /* =====================================================
+           FILTERING + PAGINATION
+        ===================================================== */
+
+        const rowsPerPage = 10;
+
+
+        const rows =
+            Array.from(
+                document.querySelectorAll(
+                    '.entry-row'
+                )
+            );
+
+
+        const pagination =
+            document.getElementById(
+                'pagination'
+            );
+
+
+        let filteredRows =
+            [...rows];
+
+
+
+        function applyFilters() {
+
+
+            const billNo =
+                document
+                    .getElementById(
+                        'filterBillNo'
+                    )
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+            const fromDate =
+                document
+                    .getElementById(
+                        'filterFromDate'
+                    )
+                    .value;
+
+
+            const toDate =
+                document
+                    .getElementById(
+                        'filterToDate'
+                    )
+                    .value;
+
+
+            filteredRows =
+                rows.filter(
+                    function (row) {
+
+
+                        const entryId =
+                            row.id.replace(
+                                'entryRow-',
+                                ''
+                            );
+
+
+                        const entry =
+                            entries[
+                                entryId
+                            ];
+
+
+                        if (!entry) {
+
+                            return false;
+
+                        }
+
+
+                        const billMatch =
+                            !billNo ||
+                            entry.bill_no
+                                .toLowerCase()
+                                .includes(
+                                    billNo
+                                );
+
+
+                        const fromMatch =
+                            !fromDate ||
+                            entry.date >=
+                            fromDate;
+
+
+                        const toMatch =
+                            !toDate ||
+                            entry.date <=
+                            toDate;
+
+
+                        return (
+                            billMatch &&
+                            fromMatch &&
+                            toMatch
+                        );
+
+                    }
+                );
+
+
+            createPaginationButtons();
+
+            showPage(1);
+
+        }
+
+
+
+        function showPage(page) {
+
+
+            rows.forEach(
+                function (row) {
+
+                    row.style.display =
+                        'none';
+
+                }
+            );
+
+
+            filteredRows.forEach(
+                function (row, index) {
+
+
+                    if (
+                        index >=
+                            (page - 1) *
+                            rowsPerPage &&
+
+                        index <
+                            page *
+                            rowsPerPage
+                    ) {
+
+                        row.style.display =
+                            '';
+
+                    }
+
+                }
+            );
+
+        }
+
+
+
+        function createPaginationButtons() {
+
+
+            const totalPages =
+                Math.ceil(
+                    filteredRows.length /
+                    rowsPerPage
+                );
+
+
+            pagination.innerHTML =
+                '';
+
+
+            for (
+                let i = 1;
+                i <= totalPages;
+                i++
+            ) {
+
+
+                const li =
+                    document.createElement(
+                        'li'
+                    );
+
+
+                li.className =
+                    'page-item';
+
+
+                li.innerHTML =
+                    `<a class="page-link" href="#">${i}</a>`;
+
+
+                li.addEventListener(
+                    'click',
+                    function (e) {
+
+
+                        e.preventDefault();
+
+
+                        showPage(i);
+
+
+                        document
+                            .querySelectorAll(
+                                '#pagination .page-item'
+                            )
+                            .forEach(
+                                function (item) {
+
+                                    item.classList
+                                        .remove(
+                                            'active'
+                                        );
+
+                                }
+                            );
+
+
+                        li.classList.add(
+                            'active'
+                        );
+
+                    }
+                );
+
+
+                pagination.appendChild(
+                    li
+                );
+
+            }
+
+
+            if (pagination.firstChild) {
+
+                pagination.firstChild
+                    .classList.add(
+                        'active'
+                    );
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           FILTER EVENTS
+        ===================================================== */
+
+        document
+            .getElementById(
+                'filterBillNo'
+            )
+            .addEventListener(
+                'input',
+                applyFilters
+            );
+
+
+        document
+            .getElementById(
+                'filterFromDate'
+            )
+            .addEventListener(
+                'change',
+                applyFilters
+            );
+
+
+        document
+            .getElementById(
+                'filterToDate'
+            )
+            .addEventListener(
+                'change',
+                applyFilters
+            );
+
+
+        document
+            .getElementById(
+                'applyFilter'
+            )
+            .addEventListener(
+                'click',
+                applyFilters
+            );
+
+
+
+        /* =====================================================
+           CLEAR FILTER
+        ===================================================== */
+
+        document
+            .getElementById(
+                'clearFilter'
+            )
+            .addEventListener(
+                'click',
+                function () {
+
+
+                    document
+                        .getElementById(
+                            'filterBillNo'
+                        )
+                        .value =
+                        '';
+
+
+                    const today =
+                        new Date()
+                            .toISOString()
+                            .split('T')[0];
+
+
+                    document
+                        .getElementById(
+                            'filterFromDate'
+                        )
+                        .value =
+                        today;
+
+
+                    document
+                        .getElementById(
+                            'filterToDate'
+                        )
+                        .value =
+                        today;
+
+
+                    applyFilters();
+
+                }
+            );
+
+
+
+        /* =====================================================
+           ENTRY DATA
+        ===================================================== */
+
+        const entries = {
+
+            {% for entry in entries %}
+
+            "{{ entry.id }}": {
+
+                id:
+                    "{{ entry.id }}",
+
+                staff:
+                    "{{ entry.staff.username|escapejs }}",
+
+                customer_id:
+                    "{{ entry.customer_id|escapejs }}",
+
+                customer_name:
+                    "{{ entry.customer_name|escapejs }}",
+
+                machine:
+                    "{% if entry.machine %}{{ entry.machine.name|escapejs }} - {{ entry.machine.number|escapejs }}{% else %}-{% endif %}",
+
+                machine_id:
+                    "{% if entry.machine %}{{ entry.machine.id }}{% endif %}",
+
+                in_points:
+                    "{{ entry.in_points }}",
+
+                out_points:
+                    "{{ entry.out_points }}",
+
+                expense_type:
+                    "{{ entry.expense_type|escapejs }}",
+
+                expense_type_display:
+                    "{{ entry.get_expense_type_display|escapejs }}",
+
+                expense_amt:
+                    "{{ entry.expense_amt }}",
+
+                good_luck:
+                    "{{ entry.good_luck }}",
+
+                bill_no:
+                    "{{ entry.bill_no|escapejs }}",
+
+                date:
+                    "{{ entry.date|date:'Y-m-d' }}",
+
+                time:
+                    "{{ entry.time|time:'H:i:s' }}",
+
+                remarks:
+                    "{{ entry.remarks|default:''|escapejs }}"
+
+            }
+
+            {% if not forloop.last %},{% endif %}
+
+            {% endfor %}
+
+        };
+
+
+
+        /* =====================================================
+           INITIAL PAGINATION
+        ===================================================== */
+
+        if (rows.length > 0) {
+
+            applyFilters();
+
+        }
+
+
+
+        /* =====================================================
+           VIEW
+        ===================================================== */
+
+        document
+            .querySelectorAll(
+                '.viewBtn'
+            )
+            .forEach(
+                function (button) {
+
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+
+                            const entry =
+                                entries[
+                                    this.dataset.entryId
+                                ];
+
+
+                            if (!entry) {
+
+                                return;
+
+                            }
+
+
+                            document
+                                .getElementById(
+                                    'view_staff'
+                                )
+                                .innerText =
+                                entry.staff;
+
+
+                            document
+                                .getElementById(
+                                    'view_customer_id'
+                                )
+                                .innerText =
+                                entry.customer_id;
+
+
+                            document
+                                .getElementById(
+                                    'view_customer_name'
+                                )
+                                .innerText =
+                                entry.customer_name;
+
+
+                            document
+                                .getElementById(
+                                    'view_machine'
+                                )
+                                .innerText =
+                                entry.machine;
+
+
+                            document
+                                .getElementById(
+                                    'view_in_points'
+                                )
+                                .innerText =
+                                entry.in_points;
+
+
+                            document
+                                .getElementById(
+                                    'view_out_points'
+                                )
+                                .innerText =
+                                entry.out_points;
+
+
+                            document
+                                .getElementById(
+                                    'view_expense_type'
+                                )
+                                .innerText =
+                                entry.expense_type_display;
+
+
+                            document
+                                .getElementById(
+                                    'view_expense_amt'
+                                )
+                                .innerText =
+                                entry.expense_amt;
+
+
+                            document
+                                .getElementById(
+                                    'view_good_luck'
+                                )
+                                .innerText =
+                                entry.good_luck;
+
+
+                            document
+                                .getElementById(
+                                    'view_bill_no'
+                                )
+                                .innerText =
+                                entry.bill_no;
+
+
+                            document
+                                .getElementById(
+                                    'view_date'
+                                )
+                                .innerText =
+                                entry.date;
+
+
+                            document
+                                .getElementById(
+                                    'view_time'
+                                )
+                                .innerText =
+                                entry.time;
+
+
+                            document
+                                .getElementById(
+                                    'view_remarks'
+                                )
+                                .innerText =
+                                entry.remarks ||
+                                '-';
+
+
+                            new bootstrap.Modal(
+                                document.getElementById(
+                                    'viewModal'
+                                )
+                            ).show();
+
+                        }
+                    );
+
+                }
+            );
+
+
+
+        /* =====================================================
+           EDIT REMARKS
+        ===================================================== */
+
+        const editExpenseType =
+            document.getElementById(
+                'edit_expense_type'
+            );
+
+
+        const editRemarksGroup =
+            document.getElementById(
+                'edit_remarks_group'
+            );
+
+
+        function toggleEditRemarks() {
+
+
+            if (
+                editExpenseType.value ===
+                'other'
+            ) {
+
+                editRemarksGroup.style.display =
+                    'block';
+
+            }
+
+            else {
+
+                editRemarksGroup.style.display =
+                    'none';
+
+
+                document
+                    .getElementById(
+                        'edit_remarks'
+                    )
+                    .value =
+                    '';
+
+            }
+
+        }
+
+
+        editExpenseType.addEventListener(
+            'change',
+            toggleEditRemarks
+        );
+
+
+
+        /* =====================================================
+           EDIT
+        ===================================================== */
+
+        document
+            .querySelectorAll(
+                '.editBtn'
+            )
+            .forEach(
+                function (button) {
+
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+
+                            const entry =
+                                entries[
+                                    this.dataset.entryId
+                                ];
+
+
+                            if (!entry) {
+
+                                return;
+
+                            }
+
+
+                            document
+                                .getElementById(
+                                    'edit_entry_id'
+                                )
+                                .value =
+                                entry.id;
+
+
+                            document
+                                .getElementById(
+                                    'edit_customer_name'
+                                )
+                                .value =
+                                entry.customer_name;
+
+
+                            document
+                                .getElementById(
+                                    'edit_machine'
+                                )
+                                .value =
+                                entry.machine_id;
+
+
+                            document
+                                .getElementById(
+                                    'edit_in_points'
+                                )
+                                .value =
+                                entry.in_points;
+
+
+                            document
+                                .getElementById(
+                                    'edit_out_points'
+                                )
+                                .value =
+                                entry.out_points;
+
+
+                            document
+                                .getElementById(
+                                    'edit_expense_type'
+                                )
+                                .value =
+                                entry.expense_type;
+
+
+                            document
+                                .getElementById(
+                                    'edit_expense_amt'
+                                )
+                                .value =
+                                entry.expense_amt;
+
+
+                            document
+                                .getElementById(
+                                    'edit_goodluck_amt'
+                                )
+                                .value =
+                                entry.good_luck;
+
+
+                            document
+                                .getElementById(
+                                    'edit_remarks'
+                                )
+                                .value =
+                                entry.remarks;
+
+
+                            toggleEditRemarks();
+
+
+                            new bootstrap.Modal(
+                                document.getElementById(
+                                    'editModal'
+                                )
+                            ).show();
+
+                        }
+                    );
+
+                }
+            );
+
+
+
+        /* =====================================================
+           EDIT SUBMIT
+        ===================================================== */
+
+        document
+            .getElementById(
+                'editForm'
+            )
+            .addEventListener(
+                'submit',
+                async function (e) {
+
+
+                    e.preventDefault();
+
+
+                    const formData =
+                        new FormData(
+                            this
+                        );
+
+
+                    try {
+
+
+                        const response =
+                            await fetch(
+                                "{% url 'customer_staff_entry' %}",
+                                {
+                                    method: 'POST',
+
+                                    headers: {
+                                        'X-Requested-With':
+                                            'XMLHttpRequest'
+                                    },
+
+                                    body:
+                                        formData
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                `HTTP ${response.status}`
+                            );
+
+                        }
+
+
+                        const result =
+                            await response.json();
+
+
+                        if (result.success) {
+
+
+                            await Swal.fire(
+                                {
+                                    icon: 'success',
+
+                                    title: 'Updated!',
+
+                                    text:
+                                        'Entry updated successfully.',
+
+                                    timer: 1500,
+
+                                    showConfirmButton:
+                                        false
+                                }
+                            );
+
+
+                            location.reload();
+
+                        }
+
+                        else {
+
+                            throw new Error(
+                                result.error ||
+                                'Update failed'
+                            );
+
+                        }
+
+                    }
+
+                    catch (error) {
+
+
+                        console.error(
+                            'Update error:',
+                            error
+                        );
+
+
+                        Swal.fire(
+                            {
+                                icon: 'error',
+
+                                title:
+                                    'Update Failed',
+
+                                text:
+                                    error.message ||
+                                    'Failed to update entry.'
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+
+
+        /* =====================================================
+           DELETE
+        ===================================================== */
+
+        document
+            .querySelectorAll(
+                '.deleteBtn'
+            )
+            .forEach(
+                function (button) {
+
+
+                    button.addEventListener(
+                        'click',
+                        async function () {
+
+
+                            const id =
+                                this.dataset.entryId;
+
+
+                            const confirmResult =
+                                await Swal.fire(
+                                    {
+                                        title:
+                                            'Delete Entry?',
+
+                                        text:
+                                            'Are you sure you want to delete this entry? This action cannot be undone.',
+
+                                        icon:
+                                            'warning',
+
+                                        showCancelButton:
+                                            true,
+
+                                        confirmButtonText:
+                                            'Yes, Delete',
+
+                                        cancelButtonText:
+                                            'Cancel',
+
+                                        confirmButtonColor:
+                                            '#d33',
+
+                                        cancelButtonColor:
+                                            '#6c757d'
+                                    }
+                                );
+
+
+                            if (
+                                !confirmResult
+                                    .isConfirmed
+                            ) {
+
+                                return;
+
+                            }
+
+
+                            try {
+
+
+                                const csrfToken =
+                                    document
+                                        .querySelector(
+                                            '[name="csrfmiddlewaretoken"]'
+                                        )
+                                        .value;
+
+
+                                const response =
+                                    await fetch(
+                                        '',
+                                        {
+                                            method:
+                                                'POST',
+
+                                            headers: {
+                                                'X-Requested-With':
+                                                    'XMLHttpRequest',
+
+                                                'X-CSRFToken':
+                                                    csrfToken
+                                            },
+
+                                            body:
+                                                new URLSearchParams(
+                                                    {
+                                                        'action':
+                                                            'delete',
+
+                                                        'entry_id':
+                                                            id,
+
+                                                        'csrfmiddlewaretoken':
+                                                            csrfToken
+                                                    }
+                                                )
+                                        }
+                                    );
+
+
+                                if (!response.ok) {
+
+                                    throw new Error(
+                                        `HTTP ${response.status}`
+                                    );
+
+                                }
+
+
+                                const result =
+                                    await response.json();
+
+
+                                if (
+                                    result.success
+                                ) {
+
+
+                                    const row =
+                                        document.getElementById(
+                                            `entryRow-${id}`
+                                        );
+
+
+                                    if (row) {
+
+                                        row.remove();
+
+                                    }
+
+
+                                    await Swal.fire(
+                                        {
+                                            icon:
+                                                'success',
+
+                                            title:
+                                                'Deleted!',
+
+                                            text:
+                                                'Entry deleted successfully.',
+
+                                            timer:
+                                                1500,
+
+                                            showConfirmButton:
+                                                false
+                                        }
+                                    );
+
+
+                                    location.reload();
+
+                                }
+
+                                else {
+
+                                    throw new Error(
+                                        result.error ||
+                                        'Failed to delete entry.'
+                                    );
+
+                                }
+
+                            }
+
+                            catch (error) {
+
+
+                                console.error(
+                                    'Delete error:',
+                                    error
+                                );
+
+
+                                Swal.fire(
+                                    {
+                                        icon:
+                                            'error',
+
+                                        title:
+                                            'Delete Failed',
+
+                                        text:
+                                            error.message ||
+                                            'Failed to delete entry.'
+                                    }
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+    }
+);
+
 </script>
 
 {% endblock %}

@@ -1,614 +1,2931 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block page_title %}Customer entires{% endblock %}
+
+{% block title %}Game Dashboard{% endblock %}
+
 {% block content %}
+
 <style>
-  .navbar {
-    background-color:  #2c3e50;
-  }
-  .navbar-brand, .nav-link, .navbar-text {
-    color: white !important;
-  }
-  .container {
-    padding-top: 30px;
-  }
-  .card {
-    margin-bottom: 20px;
-  }
-  .card-header {
-    background-color:  #2c3e50;
-    color: white;
-    font-weight: 600;
-  }
-  .btn-primary {
-    background-color:  #2c3e50;
-    border-color:  #2c3e50;
-  }
-  .btn-primary:hover {
-    background-color: #125ea3;
-  }
-  .table th, .table td {
-    vertical-align: middle;
-  }
-  .form-label {
-    font-weight: 600;
-  }
 
-  /* Mobile tweaks for Actions buttons */
-  .action-buttons {
-    display: flex;
-    flex-wrap: nowrap;  
-    gap: 0.25rem;
-    justify-content: flex-start;
-    align-items: center;
-  }
+    /* =========================================================
+       DASHBOARD
+    ========================================================= */
 
-
-  @media (max-width: 576px) {
-    .card-header {
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
+    .dashboard-page {
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
     }
-    .btn {
-      font-size: 0.875rem;
-      padding: 0.25rem 0.5rem;
+
+
+    /* =========================================================
+       PAGE HEADER
+    ========================================================= */
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 24px;
     }
+
+    .dashboard-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dashboard-title-icon {
+        width: 50px;
+        height: 50px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 13px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #00bcd4,
+                #7040d9
+            );
+
+        color: white;
+        font-size: 22px;
+
+        box-shadow:
+            0 6px 20px rgba(0, 188, 212, 0.22);
+    }
+
+    .dashboard-title h1 {
+        margin: 0;
+
+        font-size: 26px;
+        font-weight: 700;
+
+        color: #151b2e;
+    }
+
+    .dashboard-title p {
+        margin: 3px 0 0;
+
+        color: #7b849d;
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       STATISTICS
+    ========================================================= */
+
+    .stats-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 18px;
+
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+
+        padding: 20px;
+
+        border-radius: 14px;
+
+        background: #ffffff;
+
+        border: 1px solid #e7eaf1;
+
+        box-shadow:
+            0 5px 20px rgba(25, 35, 60, 0.06);
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 10px 28px rgba(25, 35, 60, 0.10);
+    }
+
+    .stat-card::after {
+        content: "";
+
+        position: absolute;
+
+        width: 110px;
+        height: 110px;
+
+        border-radius: 50%;
+
+        right: -40px;
+        bottom: -50px;
+
+        background: rgba(0, 212, 255, 0.06);
+    }
+
+    .stat-content {
+        display: flex;
+        align-items: center;
+
+        gap: 15px;
+
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+
+        min-width: 52px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 13px;
+
+        font-size: 22px;
+    }
+
+    .stat-icon.store {
+        background: rgba(0, 188, 212, 0.10);
+        color: #009db5;
+    }
+
+    .stat-icon.machine {
+        background: rgba(112, 64, 217, 0.10);
+        color: #7040d9;
+    }
+
+    .stat-icon.staff {
+        background: rgba(25, 135, 84, 0.10);
+        color: #198754;
+    }
+
+    .stat-label {
+        color: #7b849d;
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .stat-number {
+        color: #151b2e;
+        font-size: 25px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       DASHBOARD CARDS
+    ========================================================= */
+
+    .dashboard-card {
+        background: #ffffff;
+
+        border: 1px solid #e6e9f0;
+
+        border-radius: 14px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 5px 20px rgba(25, 35, 60, 0.06);
+
+        margin-bottom: 22px;
+    }
+
+    .dashboard-card-header {
+        min-height: 58px;
+
+        padding: 12px 17px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 10px;
+
+        background:
+            linear-gradient(
+                90deg,
+                #10172d,
+                #151d38
+            );
+
+        color: #ffffff;
+
+        border-bottom:
+            1px solid rgba(0, 212, 255, 0.15);
+    }
+
+    .card-heading {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .card-heading i {
+        color: #00d4ff;
+        font-size: 18px;
+    }
+
+    .dashboard-card-body {
+        padding: 0;
+    }
+
+
+    /* =========================================================
+       BUTTONS
+    ========================================================= */
+
+    .btn-game {
+        border: none;
+
+        border-radius: 7px;
+
+        color: #ffffff !important;
+
+        background:
+            linear-gradient(
+                90deg,
+                #00a8cc,
+                #7040d9
+            );
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        padding: 7px 12px;
+
+        box-shadow:
+            0 3px 10px rgba(0, 168, 204, 0.15);
+
+        transition: 0.2s ease;
+    }
+
+    .btn-game:hover {
+        transform: translateY(-1px);
+
+        box-shadow:
+            0 5px 15px rgba(0, 168, 204, 0.25);
+    }
+
+    .action-buttons {
+        display: flex;
+
+        align-items: center;
+        justify-content: flex-start;
+
+        gap: 5px;
+
+        white-space: nowrap;
+    }
+
+    .action-buttons .btn {
+        width: 32px;
+        height: 32px;
+
+        padding: 0;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 6px;
+
+        border: none;
+    }
+
+    .btn-view {
+        background: rgba(0, 188, 212, 0.12);
+        color: #009db5;
+    }
+
+    .btn-view:hover {
+        background: #00bcd4;
+        color: white;
+    }
+
+    .btn-edit {
+        background: rgba(255, 193, 7, 0.12);
+        color: #b78300;
+    }
+
+    .btn-edit:hover {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .btn-delete {
+        background: rgba(220, 53, 69, 0.10);
+        color: #dc3545;
+    }
+
+    .btn-delete:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .dashboard-table {
+        width: 100%;
+
+        margin: 0;
+
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .dashboard-table thead th {
+        background: #f7f8fb;
+
+        color: #6e7790;
+
+        border-bottom: 1px solid #e7eaf1;
+
+        border-top: none;
+
+        padding: 12px 15px;
+
+        font-size: 11px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.4px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .dashboard-table tbody td {
+        padding: 13px 15px;
+
+        border-bottom: 1px solid #edf0f5;
+
+        color: #343b4f;
+
+        font-size: 13px;
+
+        vertical-align: middle;
+    }
+
+    .dashboard-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .dashboard-table tbody tr:hover {
+        background: #fafbfe;
+    }
+
+    .table-name {
+        font-weight: 600;
+        color: #20263a;
+    }
+
+    .table-secondary {
+        color: #8790a7 !important;
+        font-size: 12px;
+    }
+
+
+    /* =========================================================
+       BADGES
+    ========================================================= */
+
+    .game-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 9px;
+
+        border-radius: 20px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        background: rgba(0, 188, 212, 0.09);
+
+        color: #008ca3;
+    }
+
+    .game-badge-purple {
+        background: rgba(112, 64, 217, 0.09);
+        color: #7040d9;
+    }
+
+    .game-badge-green {
+        background: rgba(25, 135, 84, 0.09);
+        color: #198754;
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    .empty-state {
+        text-align: center;
+
+        padding: 40px 20px;
+
+        color: #8b94aa;
+    }
+
+    .empty-state i {
+        display: block;
+
+        font-size: 35px;
+
+        margin-bottom: 10px;
+
+        color: #b6bdcc;
+    }
+
+    .empty-state p {
+        margin: 0;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       MODALS
+    ========================================================= */
+
+    .modal-content {
+        border: none;
+
+        border-radius: 14px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+        background:
+            linear-gradient(
+                90deg,
+                #10172d,
+                #151d38
+            );
+
+        color: #ffffff;
+
+        border-bottom:
+            1px solid rgba(0, 212, 255, 0.15);
+
+        padding: 15px 18px;
+    }
+
     .modal-title {
-      font-size: 1rem;
+        font-size: 16px;
+        font-weight: 600;
     }
-  }
-</style>
-<style>
-  .content,.card-body  {
-    padding: 0px !important;
-  }
+
+    .modal-title i {
+        color: #00d4ff;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #edf0f5;
+
+        padding: 12px 18px;
+    }
+
+    .modal .btn-close {
+        filter: invert(1);
+
+        opacity: 0.8;
+    }
+
+    .form-label {
+        color: #343b4f;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        margin-bottom: 6px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 42px;
+
+        border: 1px solid #dfe3ec;
+
+        border-radius: 7px;
+
+        font-size: 13px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 0 0 0.15rem rgba(0, 188, 212, 0.10);
+    }
+
+    .btn-success {
+        border: none;
+    }
+
+
+    /* =========================================================
+       MESSAGES
+    ========================================================= */
+
+    #messageContainer {
+        margin-bottom: 20px;
+    }
+
+    #messageContainer .alert {
+        border-radius: 9px;
+
+        font-size: 13px;
+
+        border: none;
+
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 767.98px) {
+
+        .dashboard-header {
+            align-items: flex-start;
+
+            margin-bottom: 18px;
+        }
+
+        .dashboard-title-icon {
+            width: 42px;
+            height: 42px;
+
+            font-size: 19px;
+        }
+
+        .dashboard-title h1 {
+            font-size: 20px;
+        }
+
+        .dashboard-title p {
+            font-size: 12px;
+        }
+
+        .stats-grid {
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+            gap: 8px;
+
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            padding: 12px 8px;
+        }
+
+        .stat-content {
+            flex-direction: column;
+
+            gap: 6px;
+
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 38px;
+            height: 38px;
+
+            min-width: 38px;
+
+            font-size: 17px;
+        }
+
+        .stat-number {
+            font-size: 18px;
+        }
+
+        .stat-label {
+            font-size: 9px;
+        }
+
+        .dashboard-card {
+            border-radius: 10px;
+
+            margin-bottom: 15px;
+        }
+
+        .dashboard-card-header {
+            min-height: 52px;
+
+            padding: 10px 12px;
+        }
+
+        .card-heading {
+            font-size: 13px;
+        }
+
+        .btn-game {
+            font-size: 10px;
+
+            padding: 6px 8px;
+        }
+
+        .dashboard-table thead th {
+            font-size: 10px;
+
+            padding: 10px;
+        }
+
+        .dashboard-table tbody td {
+            font-size: 12px;
+
+            padding: 10px;
+        }
+
+        .action-buttons .btn {
+            width: 30px;
+            height: 30px;
+        }
+
+    }
+
+
+    /* =========================================================
+       SMALL MOBILE
+    ========================================================= */
+
+    @media (max-width: 420px) {
+
+        .stats-grid {
+            gap: 6px;
+        }
+
+        .stat-card {
+            padding: 10px 5px;
+        }
+
+        .stat-number {
+            font-size: 17px;
+        }
+
+        .dashboard-title h1 {
+            font-size: 18px;
+        }
+
+        .dashboard-title p {
+            display: none;
+        }
+
+        .dashboard-card-header {
+            flex-wrap: wrap;
+        }
+
+    }
 
 </style>
 
-<div class="container">
-  {% if messages %}
-    <div id="messageContainer">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mt-2">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
 
-  <div class="row">
-    <div class="col-12 col-lg-6">
-      <!-- Stores Card -->
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          🏬 Stores
-          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">
-            ➕ Add Store
-          </button>
-        </div>
-        <div class="card-body">
-          {% if stores %}
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped mb-3 text-nowrap">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for store in stores %}
-                  <tr>
-                    <td>{{ store.name }}</td>
-                    <td>{{ store.location }}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewStoreModal{{ store.id }}">👁️</button>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStoreModal{{ store.id }}">✏️</button>
-                        <form method="post" style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="delete_store" value="1">
-                          <input type="hidden" name="store_id" value="{{ store.id }}">
-                          <button type="submit" class="btn btn-sm btn-danger" >🗑️</button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+<div class="dashboard-page">
+
+
+    <!-- =====================================================
+         DASHBOARD HEADER
+    ===================================================== -->
+
+    <div class="dashboard-header">
+
+        <div class="dashboard-title">
+
+            <div class="dashboard-title-icon">
+                <i class="bi bi-controller"></i>
             </div>
 
-            {% for store in stores %}
-            <div class="modal fade" id="viewStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title">👁️ View Store Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <p><strong>Store Name:</strong> {{ store.name }}</p>
-                    <p><strong>Location:</strong> {{ store.location }}</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
+            <div>
 
-            {% for store in stores %}
-              <!-- Edit Store Modal -->
-              <div class="modal fade" id="editStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <form method="post">
-                      {% csrf_token %}
-                      <input type="hidden" name="edit_store" value="1">
-                      <input type="hidden" name="store_id" value="{{ store.id }}">
-                      <div class="modal-header">
-                        <h5 class="modal-title">✏️ Edit Store</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="mb-2">
-                          <label class="form-label">Store Name</label>
-                          <input type="text" name="store_name" class="form-control" value="{{ store.name }}" required>
-                        </div>
-                        <div class="mb-2">
-                          <label class="form-label">Location</label>
-                          <input type="text" name="store_location" class="form-control" value="{{ store.location }}">
-                        </div>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Save</button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted">No stores available.</p>
-          {% endif %}
+                <h1>
+                    Game Dashboard
+                </h1>
+
+                <p>
+                    Manage your stores, machines and staff
+                </p>
+
+            </div>
+
         </div>
 
-        <!-- Add Store Modal -->
-        <div class="modal fade" id="addStoreModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="new_store" value="1">
-                <div class="modal-header">
-                  <h5 class="modal-title">➕ Add New Store</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mb-2">
-                    <label class="form-label">Store Name</label>
-                    <input type="text" name="store_name" class="form-control" required>
-                  </div>
-                  <div class="mb-2">
-                    <label class="form-label">Location</label>
-                    <input type="text" name="store_location" class="form-control">
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="submit" class="btn btn-success">Save Store</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Machines Card -->
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          🎰 Machines
-          <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addMachineModal">➕ Add Machine</button>
-        </div>
-        <div class="card-body">
-          {% if machines %}
-            <div class="table-responsive">
-            <table class="table table-bordered table-striped mb-3 text-nowrap">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Number</th>
-                    <th>Store</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for machine in machines %}
-                  <tr>
-                    <td>{{ machine.name }}</td>
-                    <td>{{ machine.number }}</td>
-                    <td>{{ machine.store.name }}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewMachineModal{{ machine.id }}">👁️</button>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editMachineModal{{ machine.id }}">✏️</button>
-                        <form method="post" style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="delete_machine" value="1">
-                          <input type="hidden" name="machine_id" value="{{ machine.id }}">
-                          <button type="submit" class="btn btn-sm btn-danger" >🗑️</button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="text-muted">No machines available.</p>
-          {% endif %}
-          {% for machine in machines %}
-          <div class="modal fade" id="editMachineModal{{ machine.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="edit_machine" value="1">
-                  <input type="hidden" name="machine_id" value="{{ machine.id }}">
-                  <div class="modal-header">
-                    <h5 class="modal-title">✏️ Edit Machine</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-3">
-                      <label class="form-label">Machine Name</label>
-                      <input type="text" name="name" class="form-control" value="{{ machine.name }}" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Number</label>
-                      <input type="text" name="number" class="form-control" value="{{ machine.number }}" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Assign to Store</label>
-                      <select name="store_id" class="form-select" required>
-                        <option value="">-- Select Store --</option>
-                        {% for store in stores %}
-                          <option value="{{ store.id }}" {% if store.id == machine.store.id %}selected{% endif %}>{{ store.name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Save</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-
-          <!-- Add Machine Modal -->
-          <div class="modal fade" id="addMachineModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="new_machine" value="1">
-                  <div class="modal-header">
-                    <h5 class="modal-title">➕ Add New Machine</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-2">
-                      <label class="form-label">Machine Name</label>
-                      <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label">Machine Number</label>
-                      <input type="text" name="number" class="form-control" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label">Assign to Store</label>
-                      <select name="store_id" class="form-select" required>
-                        <option value="">-- Select Store --</option>
-                        {% for store in stores %}
-                        <option value="{{ store.id }}">{{ store.name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Machine</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- View Machine Modal -->
-          {% for machine in machines %}
-          <div class="modal fade" id="viewMachineModal{{ machine.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">🎰 Machine Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <p><strong>Name:</strong> {{ machine.name }}</p>
-                  <p><strong>Number:</strong> {{ machine.number }}</p>
-                  <p><strong>Store:</strong> {{ machine.store.name }}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
     </div>
 
-    <!-- Right Column: Staff -->
-    <div class="col-lg-6">
-      <div class="card">
-        <div class="card-header">
-          👥 Staff Members
-          <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addStaffModal">➕ Add Staff</button>
+
+    <!-- =====================================================
+         DJANGO MESSAGES
+    ===================================================== -->
+
+    {% if messages %}
+
+        <div id="messageContainer">
+
+            {% for message in messages %}
+
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
         </div>
-        <div class="card-body">
-          {% if staff_users %}
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped mb-3 text-nowrap">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Phone</th>
-                  <!-- <th>Email</th> -->
-                  <th>Store</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for user in staff_users %}
-                  <tr>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.phone_number|default:"-" }}</td>
-                    <!-- <td>{{ user.email }}</td> -->
-                    <td>{{ user.store.name|default:"Not Assigned" }}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewStaffModal{{ user.id }}">👁️</button>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStaffModal{{ user.id }}">✏️</button>
-                        <form method="post" style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="delete_staff" value="1">
-                          <input type="hidden" name="staff_id" value="{{ user.id }}">
-                          <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-            <p class="text-muted">No staff users yet.</p>
-          {% endif %}
-          {% for user in staff_users %}
-          <div class="modal fade" id="editStaffModal{{ user.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="edit_staff" value="1">
-                  <input type="hidden" name="staff_id" value="{{ user.id }}">
-                  <div class="modal-header">
-                    <h5 class="modal-title">✏️ Edit Staff</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-2">
-                      <label class="form-label">Username</label>
-                      <input type="text" name="staff_username" class="form-control" value="{{ user.username }}" required>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         STATISTICS
+    ===================================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- Stores -->
+
+        <div class="stat-card">
+
+            <div class="stat-content">
+
+                <div class="stat-icon store">
+                    <i class="bi bi-shop"></i>
+                </div>
+
+                <div>
+
+                    <div class="stat-label">
+                        Total Stores
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">Email</label>
-                      <input type="email" name="staff_email" class="form-control" value="{{ user.email }}">
+
+                    <div class="stat-number">
+                        {{ stores|length }}
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">Assign to Store</label>
-                      <select name="staff_store" class="form-select">
-                        <option value="">-- Optional --</option>
-                        {% for store in stores %}
-                          <option value="{{ store.id }}" {% if user.store and user.store.id == store.id %}selected{% endif %}>{{ store.name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit"class="btn btn-success">Save</button>
-                  </div>
-                </form>
-              </div>
+
+                </div>
+
             </div>
-          </div>
-          {% endfor %}
-          <!-- Add Staff Modal -->
-          <div class="modal fade" id="addStaffModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="new_staff" value="1">
-                  <div class="modal-header">
-                    <h5 class="modal-title">➕ Add New Staff</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-2">
-                      <label class="form-label">Username</label>
-                      <input type="text" name="staff_username" id="staff_username" class="form-control" required>
+
+        </div>
+
+
+        <!-- Machines -->
+
+        <div class="stat-card">
+
+            <div class="stat-content">
+
+                <div class="stat-icon machine">
+                    <i class="bi bi-controller"></i>
+                </div>
+
+                <div>
+
+                    <div class="stat-label">
+                        Total Machines
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">Phone</label>
-                      <input type="text" name="staff_phone" id="staff_phone" class="form-control" maxlength="10">
+
+                    <div class="stat-number">
+                        {{ machines|length }}
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">Email (optional)</label>
-                      <input type="email" name="staff_email" id="staff_email" class="form-control">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Staff -->
+
+        <div class="stat-card">
+
+            <div class="stat-content">
+
+                <div class="stat-icon staff">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <div>
+
+                    <div class="stat-label">
+                        Staff Members
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">Password</label>
-                      <div class="position-relative">
-                        <input type="password" name="staff_password" id="staff_password" class="form-control pe-5">
-                        <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer;" onclick="togglePasswordVisibility('staff_password', this)">
-                          <i class="bi bi-eye-fill"></i>
+
+                    <div class="stat-number">
+                        {{ staff_users|length }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN DASHBOARD ROW
+    ===================================================== -->
+
+    <div class="row g-4">
+
+
+        <!-- =================================================
+             LEFT COLUMN
+        ================================================= -->
+
+        <div class="col-12 col-xl-6">
+
+
+            <!-- =================================================
+                 STORES
+            ================================================= -->
+
+            <div class="dashboard-card">
+
+                <div class="dashboard-card-header">
+
+                    <div class="card-heading">
+
+                        <i class="bi bi-shop"></i>
+
+                        <span>
+                            Stores
                         </span>
-                      </div>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label">Assign to Store</label>
-                      <select name="staff_store" id="staff_store" class="form-select">
-                        <option value="">-- select --</option>
-                        {% for store in stores %}
-                        <option value="{{ store.id }}">{{ store.name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Staff</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
 
-          <!-- View Staff Modal -->
-          {% for user in staff_users %}
-          <div class="modal fade" id="viewStaffModal{{ user.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">👤 Staff Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-game"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addStoreModal"
+                    >
+
+                        <i class="bi bi-plus-lg me-1"></i>
+
+                        Add Store
+
+                    </button>
+
                 </div>
-                <div class="modal-body">
-                  <p><strong>Username:</strong> {{ user.username }}</p>
-                  <p><strong>Email:</strong> {{ user.email }}</p>
-                  <p><strong>Phone:</strong> {{ user.phone|default:"-" }}</p>
-                  <p><strong>Store:</strong> {{ user.store.name|default:"Not Assigned" }}</p>
+
+
+                <div class="dashboard-card-body">
+
+                    {% if stores %}
+
+                        <div class="table-responsive">
+
+                            <table class="table dashboard-table text-nowrap">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Name
+                                        </th>
+
+                                        <th>
+                                            Location
+                                        </th>
+
+                                        <th>
+                                            Actions
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for store in stores %}
+
+                                        <tr>
+
+                                            <td>
+
+                                                <span class="table-name">
+                                                    {{ store.name }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="table-secondary">
+                                                    {{ store.location|default:"-" }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div class="action-buttons">
+
+
+                                                    <!-- View -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-view"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#viewStoreModal{{ store.id }}"
+                                                        title="View"
+                                                    >
+
+                                                        <i class="bi bi-eye"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Edit -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-edit"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editStoreModal{{ store.id }}"
+                                                        title="Edit"
+                                                    >
+
+                                                        <i class="bi bi-pencil"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Delete -->
+
+                                                    <form
+                                                        method="post"
+                                                        style="display:inline;"
+                                                    >
+
+                                                        {% csrf_token %}
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="delete_store"
+                                                            value="1"
+                                                        >
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="store_id"
+                                                            value="{{ store.id }}"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-delete"
+                                                            title="Delete"
+                                                        >
+
+                                                            <i class="bi bi-trash"></i>
+
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-state">
+
+                            <i class="bi bi-shop"></i>
+
+                            <p>
+                                No stores available.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-              </div>
+
             </div>
-          </div>
-          {% endfor %}
+
+
+
+            <!-- =================================================
+                 MACHINES
+            ================================================= -->
+
+            <div class="dashboard-card">
+
+                <div class="dashboard-card-header">
+
+                    <div class="card-heading">
+
+                        <i class="bi bi-controller"></i>
+
+                        <span>
+                            Machines
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-game"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addMachineModal"
+                    >
+
+                        <i class="bi bi-plus-lg me-1"></i>
+
+                        Add Machine
+
+                    </button>
+
+                </div>
+
+
+                <div class="dashboard-card-body">
+
+                    {% if machines %}
+
+                        <div class="table-responsive">
+
+                            <table class="table dashboard-table text-nowrap">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Name
+                                        </th>
+
+                                        <th>
+                                            Number
+                                        </th>
+
+                                        <th>
+                                            Store
+                                        </th>
+
+                                        <th>
+                                            Actions
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for machine in machines %}
+
+                                        <tr>
+
+                                            <td>
+
+                                                <span class="table-name">
+                                                    {{ machine.name }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="game-badge game-badge-purple">
+
+                                                    <i class="bi bi-hash me-1"></i>
+
+                                                    {{ machine.number }}
+
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="table-secondary">
+                                                    {{ machine.store.name }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div class="action-buttons">
+
+
+                                                    <!-- View -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-view"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#viewMachineModal{{ machine.id }}"
+                                                        title="View"
+                                                    >
+
+                                                        <i class="bi bi-eye"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Edit -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-edit"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editMachineModal{{ machine.id }}"
+                                                        title="Edit"
+                                                    >
+
+                                                        <i class="bi bi-pencil"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Delete -->
+
+                                                    <form
+                                                        method="post"
+                                                        style="display:inline;"
+                                                    >
+
+                                                        {% csrf_token %}
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="delete_machine"
+                                                            value="1"
+                                                        >
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="machine_id"
+                                                            value="{{ machine.id }}"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-delete"
+                                                            title="Delete"
+                                                        >
+
+                                                            <i class="bi bi-trash"></i>
+
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-state">
+
+                            <i class="bi bi-controller"></i>
+
+                            <p>
+                                No machines available.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
         </div>
-      </div>
+
+
+
+        <!-- =================================================
+             RIGHT COLUMN
+        ================================================= -->
+
+        <div class="col-12 col-xl-6">
+
+
+            <!-- =================================================
+                 STAFF
+            ================================================= -->
+
+            <div class="dashboard-card">
+
+                <div class="dashboard-card-header">
+
+                    <div class="card-heading">
+
+                        <i class="bi bi-people"></i>
+
+                        <span>
+                            Staff Members
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-game"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addStaffModal"
+                    >
+
+                        <i class="bi bi-plus-lg me-1"></i>
+
+                        Add Staff
+
+                    </button>
+
+                </div>
+
+
+                <div class="dashboard-card-body">
+
+                    {% if staff_users %}
+
+                        <div class="table-responsive">
+
+                            <table class="table dashboard-table text-nowrap">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Username
+                                        </th>
+
+                                        <th>
+                                            Phone
+                                        </th>
+
+                                        <th>
+                                            Store
+                                        </th>
+
+                                        <th>
+                                            Actions
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for user in staff_users %}
+
+                                        <tr>
+
+                                            <td>
+
+                                                <span class="table-name">
+
+                                                    <i class="bi bi-person me-1"></i>
+
+                                                    {{ user.username }}
+
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="table-secondary">
+
+                                                    {{ user.phone_number|default:"-" }}
+
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                {% if user.store %}
+
+                                                    <span class="game-badge game-badge-green">
+
+                                                        <i class="bi bi-shop me-1"></i>
+
+                                                        {{ user.store.name }}
+
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="table-secondary">
+                                                        Not Assigned
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div class="action-buttons">
+
+
+                                                    <!-- View -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-view"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#viewStaffModal{{ user.id }}"
+                                                        title="View"
+                                                    >
+
+                                                        <i class="bi bi-eye"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Edit -->
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-edit"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editStaffModal{{ user.id }}"
+                                                        title="Edit"
+                                                    >
+
+                                                        <i class="bi bi-pencil"></i>
+
+                                                    </button>
+
+
+                                                    <!-- Delete -->
+
+                                                    <form
+                                                        method="post"
+                                                        style="display:inline;"
+                                                    >
+
+                                                        {% csrf_token %}
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="delete_staff"
+                                                            value="1"
+                                                        >
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="staff_id"
+                                                            value="{{ user.id }}"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-delete"
+                                                            title="Delete"
+                                                        >
+
+                                                            <i class="bi bi-trash"></i>
+
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-state">
+
+                            <i class="bi bi-people"></i>
+
+                            <p>
+                                No staff users yet.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-  </div>
+
 </div>
+
+
+
+<!-- =========================================================
+     STORE MODALS
+========================================================= -->
+
+
+{% for store in stores %}
+
+
+    <!-- View Store -->
+
+    <div
+        class="modal fade"
+        id="viewStoreModal{{ store.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-shop me-2"></i>
+
+                        Store Details
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <p>
+                        <strong>Store Name:</strong>
+                        {{ store.name }}
+                    </p>
+
+                    <p>
+                        <strong>Location:</strong>
+                        {{ store.location|default:"-" }}
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Edit Store -->
+
+    <div
+        class="modal fade"
+        id="editStoreModal{{ store.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="edit_store"
+                        value="1"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="store_id"
+                        value="{{ store.id }}"
+                    >
+
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">
+
+                            <i class="bi bi-pencil me-2"></i>
+
+                            Edit Store
+
+                        </h5>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                        ></button>
+
+                    </div>
+
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Store Name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="store_name"
+                                class="form-control"
+                                value="{{ store.name }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <label class="form-label">
+                                Location
+                            </label>
+
+                            <input
+                                type="text"
+                                name="store_location"
+                                class="form-control"
+                                value="{{ store.location }}"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+                            Save
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endfor %}
+
+
+
+<!-- =========================================================
+     ADD STORE MODAL
+========================================================= -->
+
+<div
+    class="modal fade"
+    id="addStoreModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="new_store"
+                    value="1"
+                >
+
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-plus-circle me-2"></i>
+
+                        Add New Store
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Store Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="store_name"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Location
+                        </label>
+
+                        <input
+                            type="text"
+                            name="store_location"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="submit"
+                        class="btn btn-game"
+                    >
+                        Save Store
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     MACHINE MODALS
+========================================================= -->
+
+
+{% for machine in machines %}
+
+
+    <!-- Edit Machine -->
+
+    <div
+        class="modal fade"
+        id="editMachineModal{{ machine.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="edit_machine"
+                        value="1"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="machine_id"
+                        value="{{ machine.id }}"
+                    >
+
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">
+
+                            <i class="bi bi-pencil me-2"></i>
+
+                            Edit Machine
+
+                        </h5>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                        ></button>
+
+                    </div>
+
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Machine Name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="name"
+                                class="form-control"
+                                value="{{ machine.name }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Number
+                            </label>
+
+                            <input
+                                type="text"
+                                name="number"
+                                class="form-control"
+                                value="{{ machine.number }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Assign to Store
+                            </label>
+
+                            <select
+                                name="store_id"
+                                class="form-select"
+                                required
+                            >
+
+                                <option value="">
+                                    -- Select Store --
+                                </option>
+
+                                {% for store in stores %}
+
+                                    <option
+                                        value="{{ store.id }}"
+                                        {% if store.id == machine.store.id %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ store.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+                            Save
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- View Machine -->
+
+    <div
+        class="modal fade"
+        id="viewMachineModal{{ machine.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-controller me-2"></i>
+
+                        Machine Details
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <p>
+                        <strong>Name:</strong>
+                        {{ machine.name }}
+                    </p>
+
+                    <p>
+                        <strong>Number:</strong>
+                        {{ machine.number }}
+                    </p>
+
+                    <p>
+                        <strong>Store:</strong>
+                        {{ machine.store.name }}
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endfor %}
+
+
+
+<!-- =========================================================
+     ADD MACHINE MODAL
+========================================================= -->
+
+<div
+    class="modal fade"
+    id="addMachineModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="new_machine"
+                    value="1"
+                >
+
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-plus-circle me-2"></i>
+
+                        Add New Machine
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Machine Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Machine Number
+                        </label>
+
+                        <input
+                            type="text"
+                            name="number"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Assign to Store
+                        </label>
+
+                        <select
+                            name="store_id"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="">
+                                -- Select Store --
+                            </option>
+
+                            {% for store in stores %}
+
+                                <option value="{{ store.id }}">
+                                    {{ store.name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="submit"
+                        class="btn btn-game"
+                    >
+                        Add Machine
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     STAFF MODALS
+========================================================= -->
+
+
+{% for user in staff_users %}
+
+
+    <!-- Edit Staff -->
+
+    <div
+        class="modal fade"
+        id="editStaffModal{{ user.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="edit_staff"
+                        value="1"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="staff_id"
+                        value="{{ user.id }}"
+                    >
+
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">
+
+                            <i class="bi bi-pencil me-2"></i>
+
+                            Edit Staff
+
+                        </h5>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                        ></button>
+
+                    </div>
+
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Username
+                            </label>
+
+                            <input
+                                type="text"
+                                name="staff_username"
+                                class="form-control"
+                                value="{{ user.username }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                name="staff_email"
+                                class="form-control"
+                                value="{{ user.email }}"
+                            >
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <label class="form-label">
+                                Assign to Store
+                            </label>
+
+                            <select
+                                name="staff_store"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    -- Optional --
+                                </option>
+
+                                {% for store in stores %}
+
+                                    <option
+                                        value="{{ store.id }}"
+                                        {% if user.store and user.store.id == store.id %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ store.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+                            Save
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- View Staff -->
+
+    <div
+        class="modal fade"
+        id="viewStaffModal{{ user.id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-person-circle me-2"></i>
+
+                        Staff Details
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <p>
+                        <strong>Username:</strong>
+                        {{ user.username }}
+                    </p>
+
+                    <p>
+                        <strong>Email:</strong>
+                        {{ user.email|default:"-" }}
+                    </p>
+
+                    <p>
+                        <strong>Phone:</strong>
+                        {{ user.phone_number|default:"-" }}
+                    </p>
+
+                    <p>
+                        <strong>Store:</strong>
+
+                        {% if user.store %}
+                            {{ user.store.name }}
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endfor %}
+
+
+
+<!-- =========================================================
+     ADD STAFF MODAL
+========================================================= -->
+
+<div
+    class="modal fade"
+    id="addStaffModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="new_staff"
+                    value="1"
+                >
+
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="bi bi-person-plus me-2"></i>
+
+                        Add New Staff
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            name="staff_username"
+                            id="staff_username"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Phone
+                        </label>
+
+                        <input
+                            type="text"
+                            name="staff_phone"
+                            id="staff_phone"
+                            class="form-control"
+                            maxlength="10"
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="staff_email"
+                            id="staff_email"
+                            class="form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Password
+                        </label>
+
+                        <div class="position-relative">
+
+                            <input
+                                type="password"
+                                name="staff_password"
+                                id="staff_password"
+                                class="form-control pe-5"
+                            >
+
+
+                            <span
+                                class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                style="cursor:pointer;"
+                                onclick="togglePasswordVisibility(
+                                    'staff_password',
+                                    this
+                                )"
+                            >
+
+                                <i class="bi bi-eye-fill"></i>
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Assign to Store
+                        </label>
+
+                        <select
+                            name="staff_store"
+                            id="staff_store"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                -- Select Store --
+                            </option>
+
+                            {% for store in stores %}
+
+                                <option value="{{ store.id }}">
+                                    {{ store.name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="submit"
+                        class="btn btn-game"
+                    >
+                        Add Staff
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('form[method="post"]').forEach(form => {
-    form.addEventListener('submit', (e) => {
-      let actionType = 'save';
 
-      if (form.querySelector('input[name="delete_store"]')) {
-        actionType = 'delete this store';
-      } else if (form.querySelector('input[name="delete_machine"]')) {
-        actionType = 'delete this machine';
-      } else if (form.querySelector('input[name="delete_staff"]')) {
-        actionType = 'delete this staff member';
-      } else if (form.querySelector('input[name="edit_store"]')) {
-        actionType = 'update store';
-      } else if (form.querySelector('input[name="edit_machine"]')) {
-        actionType = 'update machine';
-      } else if (form.querySelector('input[name="edit_staff"]')) {
-        actionType = 'update staff member';
-      } else if (form.querySelector('input[name="new_store"]')) {
-        actionType = 'add new store';
-      } else if (form.querySelector('input[name="new_machine"]')) {
-        actionType = 'add new machine';
-      } else if (form.querySelector('input[name="new_staff"]')) {
-        actionType = 'add new staff member';
-      }
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-      if (!confirm(`Are you sure you want to ${actionType}?`)) {
-        e.preventDefault();
-      }
-    });
-  });
+        /* ============================================
+           CONFIRMATION FOR POST ACTIONS
+        ============================================ */
 
-  // Hide messages after 3 seconds
-  setTimeout(() => {
-    const msgDiv = document.getElementById('messageContainer');
-    if (msgDiv) {
-      msgDiv.style.display = 'none';
+        document
+            .querySelectorAll('form[method="post"]')
+            .forEach(function (form) {
+
+                form.addEventListener(
+                    'submit',
+                    function (e) {
+
+                        let actionType = 'save';
+
+
+                        if (
+                            form.querySelector(
+                                'input[name="delete_store"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'delete this store';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="delete_machine"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'delete this machine';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="delete_staff"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'delete this staff member';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="edit_store"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'update store';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="edit_machine"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'update machine';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="edit_staff"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'update staff member';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="new_store"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'add new store';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="new_machine"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'add new machine';
+
+                        }
+
+                        else if (
+                            form.querySelector(
+                                'input[name="new_staff"]'
+                            )
+                        ) {
+
+                            actionType =
+                                'add new staff member';
+
+                        }
+
+
+                        if (
+                            !confirm(
+                                `Are you sure you want to ${actionType}?`
+                            )
+                        ) {
+
+                            e.preventDefault();
+
+                        }
+
+                    }
+
+                );
+
+            });
+
+
+
+        /* ============================================
+           HIDE MESSAGES AFTER 3 SECONDS
+        ============================================ */
+
+        setTimeout(
+            function () {
+
+                const msgDiv =
+                    document.getElementById(
+                        'messageContainer'
+                    );
+
+                if (msgDiv) {
+
+                    msgDiv.style.transition =
+                        'opacity 0.4s ease';
+
+                    msgDiv.style.opacity = '0';
+
+
+                    setTimeout(
+                        function () {
+
+                            msgDiv.style.display =
+                                'none';
+
+                        },
+                        400
+                    );
+
+                }
+
+            },
+            3000
+        );
+
+
+
+        /* ============================================
+           RESTORE STAFF FORM DATA
+        ============================================ */
+
+        const fields = [
+
+            'staff_username',
+
+            'staff_email',
+
+            'staff_phone',
+
+            'staff_password',
+
+            'staff_store'
+
+        ];
+
+
+        fields.forEach(
+            function (id) {
+
+                const el =
+                    document.getElementById(id);
+
+
+                if (
+                    el &&
+                    localStorage.getItem(id) !== null
+                ) {
+
+                    el.value =
+                        localStorage.getItem(id);
+
+                }
+
+            }
+        );
+
+
+
+        /* ============================================
+           SAVE STAFF FORM DATA
+        ============================================ */
+
+        fields.forEach(
+            function (id) {
+
+                const el =
+                    document.getElementById(id);
+
+
+                if (el) {
+
+                    const save =
+                        function () {
+
+                            localStorage.setItem(
+                                id,
+                                el.value
+                            );
+
+                        };
+
+
+                    el.addEventListener(
+                        'input',
+                        save
+                    );
+
+
+                    el.addEventListener(
+                        'change',
+                        save
+                    );
+
+                }
+
+            }
+        );
+
     }
-  }, 3000);
-});
-</script>
-<script>
-function togglePasswordVisibility(inputId, iconSpan) {
-  const input = document.getElementById(inputId);
-  const icon = iconSpan.querySelector('i');
+);
 
-  if (input.type === "password") {
-    input.type = "text";
-    icon.classList.remove('bi-eye-fill');
-    icon.classList.add('bi-eye-slash-fill');
-  } else {
-    input.type = "password";
-    icon.classList.remove('bi-eye-slash-fill');
-    icon.classList.add('bi-eye-fill');
-  }
+
+
+/* ================================================
+   PASSWORD VISIBILITY
+================================================ */
+
+function togglePasswordVisibility(
+    inputId,
+    iconSpan
+) {
+
+    const input =
+        document.getElementById(inputId);
+
+
+    const icon =
+        iconSpan.querySelector('i');
+
+
+    if (input.type === 'password') {
+
+        input.type = 'text';
+
+
+        icon.classList.remove(
+            'bi-eye-fill'
+        );
+
+
+        icon.classList.add(
+            'bi-eye-slash-fill'
+        );
+
+    }
+
+    else {
+
+        input.type = 'password';
+
+
+        icon.classList.remove(
+            'bi-eye-slash-fill'
+        );
+
+
+        icon.classList.add(
+            'bi-eye-fill'
+        );
+
+    }
+
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const fields = [
-    'staff_username',
-    'staff_email',
-    'staff_phone',
-    'staff_password',
-    'staff_store'
-  ];
 
-  // Restore on load
-  fields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && localStorage.getItem(id) !== null) {
-      el.value = localStorage.getItem(id);
-    }
-  });
-
-  // Save on input or change
-  fields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      const save = () => localStorage.setItem(id, el.value);
-      el.addEventListener('input', save);
-      el.addEventListener('change', save);
-    }
-  });
-});
 </script>
+
+
+
+<!-- =========================================================
+     CLEAR SAVED STAFF DATA
+========================================================= -->
+
 {% if request.session.clear_local_storage %}
+
 <script>
-  localStorage.removeItem('staff_username');
-  localStorage.removeItem('staff_email');
-  localStorage.removeItem('staff_phone');
-  localStorage.removeItem('staff_password');
-  localStorage.removeItem('staff_store');
+
+    localStorage.removeItem(
+        'staff_username'
+    );
+
+    localStorage.removeItem(
+        'staff_email'
+    );
+
+    localStorage.removeItem(
+        'staff_phone'
+    );
+
+    localStorage.removeItem(
+        'staff_password'
+    );
+
+    localStorage.removeItem(
+        'staff_store'
+    );
+
 </script>
+
 {% endif %}
+
 {% endblock %}
