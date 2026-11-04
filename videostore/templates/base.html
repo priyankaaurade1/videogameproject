@@ -1082,7 +1082,7 @@
                                 <i class="bi bi-list-check"></i>
 
                                 <span>
-                                    All Staff Entries
+                                    All Reading Entries
                                 </span>
 
                             </a>
@@ -1110,26 +1110,36 @@
 
 
 
-                <!-- Super Admin -->
+                <!-- Staff Dashboard -->
 
-                {% if request.user.is_superuser %}
+                {% if request.user.role == 'staff' %}
 
                     <li class="superadmin-link">
-
-                        <a href="{% url 'superadmin_dashboard' %}">
-
+                        <a href="{% url 'staff_dashboard' %}">
                             <i class="bi bi-speedometer2"></i>
-
                             <span class="nav-text">
-                                Superadmin Dashboard
+                                Staff Dashboard
                             </span>
-
                         </a>
-
                     </li>
 
                 {% endif %}
 
+
+                <!-- Super Admin Dashboard -->
+
+                {% if request.user.role == 'superadmin' or request.user.is_superuser %}
+
+                    <li class="superadmin-link">
+                        <a href="{% url 'superadmin_dashboard' %}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span class="nav-text">
+                                Superadmin Dashboard
+                            </span>
+                        </a>
+                    </li>
+
+                {% endif %}
 
             </ul>
 
@@ -1382,7 +1392,7 @@
 
                                     <i class="bi bi-list-check"></i>
 
-                                    All Staff Entries
+                                    All Reading Entries
 
                                 </a>
 
@@ -1409,28 +1419,38 @@
                     </li>
 
 
+                    <!-- Staff Dashboard -->
 
-                    <!-- Super Admin -->
-
-                    {% if request.user.is_superuser %}
+                    {% if request.user.role == 'staff' %}
 
                         <li class="superadmin-link">
-
                             <a
-                                href="{% url 'superadmin_dashboard' %}"
+                                href="{% url 'staff_dashboard' %}"
                                 onclick="closeMobileSidebar()"
                             >
-
                                 <i class="bi bi-speedometer2"></i>
-
-                                Superadmin Dashboard
-
+                                Staff Dashboard
                             </a>
-
                         </li>
 
                     {% endif %}
 
+
+                    <!-- Super Admin Dashboard -->
+
+                    {% if request.user.role == 'superadmin' or request.user.is_superuser %}
+
+                        <li class="superadmin-link">
+                            <a
+                                href="{% url 'superadmin_dashboard' %}"
+                                onclick="closeMobileSidebar()"
+                            >
+                                <i class="bi bi-speedometer2"></i>
+                                Superadmin Dashboard
+                            </a>
+                        </li>
+
+                    {% endif %}
 
                 </ul>
 

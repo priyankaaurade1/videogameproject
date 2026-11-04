@@ -27,35 +27,140 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 IST = pytz.timezone('Asia/Kolkata')
 
 def custom_login(request):
+
+    # ==========================================
+    # ALREADY LOGGED IN
+    # ==========================================
+
     if request.user.is_authenticated:
+
         if request.user.role == 'superadmin':
             return redirect('superadmin_dashboard')
+
         elif request.user.role == 'staff':
-            return redirect('customer_staff_entry')
+
+            if request.user.store is None:
+                messages.error(
+                    request,
+                    "You are not assigned to any store. Contact admin."
+                )
+                return redirect('custom_login')
+
+            return redirect('staff_dashboard')
+
+
+    # ==========================================
+    # LOGIN POST
+    # ==========================================
+
     if request.method == 'POST':
+
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        if not username or not password:
-            messages.error(request, "Please enter both username and password.")
-            return render(request, 'login.html')
 
-        user = authenticate(request, username=username, password=password)
+        if not username or not password:
+
+            messages.error(
+                request,
+                "Please enter both username and password."
+            )
+
+            return render(
+                request,
+                'login.html'
+            )
+
+
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
 
         if user is not None:
+
             login(request, user)
+
+
+            # ==================================
+            # SUPERADMIN
+            # ==================================
+
             if user.role == 'superadmin':
-                return redirect('superadmin_dashboard')
+
+                return redirect(
+                    'superadmin_dashboard'
+                )
+
+
+            # ==================================
+            # STAFF
+            # ==================================
+
             elif user.role == 'staff':
+
                 if user.store is None:
-                    messages.error(request, "You are not assigned to any store. Contact admin.")
-                    return redirect('custom_login')
-                return redirect('customer_staff_entry')
+
+                    logout(request)
+
+                    messages.error(
+                        request,
+                        "You are not assigned to any store. Contact admin."
+                    )
+
+                    return redirect(
+                        'custom_login'
+                    )
+
+
+                return redirect(
+                    'staff_dashboard'
+                )
+
+
+            # ==================================
+            # INVALID ROLE
+            # ==================================
+
             else:
-                messages.error(request, "Invalid user role.")
+
+                logout(request)
+
+                messages.error(
+                    request,
+                    "Invalid user role."
+                )
+
+                return redirect(
+                    'custom_login'
+                )
+
+
         else:
-            messages.error(request, "Invalid username or password.")
-    return render(request, 'login.html')
+
+            messages.error(
+                request,
+                "Invalid username or password."
+            )
+
+
+    return render(
+        request,
+        'login.html'
+    )
+
+@login_required
+def dashboard_redirect(request):
+
+    if request.user.role == 'superadmin' or request.user.is_superuser:
+        return redirect('superadmin_dashboard')
+
+    elif request.user.role == 'staff':
+        return redirect('staff_dashboard')
+
+    return redirect('custom_login')
 
 def is_superadmin(user):
     return user.is_authenticated and user.is_superuser
@@ -377,7 +482,7 @@ def staff_entry(request):
             "✅ Reading entry saved successfully!"
         )
 
-        return redirect('staff_entry')
+        return redirect('staff_dashboard')
 
     context = {
         'now': now,
@@ -390,7 +495,7 @@ def staff_entry(request):
         'staff_entry.html',
         context
     )
-    
+
 @login_required
 def customer_staff_entry(request):
     if request.user.role == 'staff':
@@ -451,7 +556,7 @@ def customer_staff_entry(request):
             return JsonResponse({'success': True, 'id': entry.id})
 
         messages.success(request, "✅ Data saved successfully!")
-        return redirect('staff_entry')
+        return redirect('staff_dashboard')
 
     context = {
         'now': now,
@@ -964,3 +1069,180 @@ def export_customer_entries_pdf(request):
 
     doc.build(elements)
     return response
+
+
+@login_required
+def staff_dashboard(request):
+
+    user = request.user
+
+
+    # ==========================================
+    # ONLY STAFF CAN ACCESS THIS DASHBOARD
+    # ==========================================
+
+    if user.role != 'staff':
+
+        if user.role == 'superadmin' or user.is_superuser:
+            return redirect('superadmin_dashboard')
+
+        messages.error(
+            request,
+            "Unauthorized access."
+        )
+
+        return redirect('custom_login')
+
+
+    # ==========================================
+    # STAFF MUST HAVE A STORE
+    # ==========================================
+
+    if not user.store:
+
+        messages.error(
+            request,
+            "You are not assigned to any store."
+        )
+
+        return redirect('custom_login')
+
+
+    # ==========================================
+    # STAFF STORE
+    # ==========================================
+
+    store = user.store
+
+
+    # ==========================================
+    # MACHINES
+    #
+    # Staff can ONLY see machines
+    # belonging to their store.
+    # ==========================================
+
+    machines = Machine.objects.filter(
+        store=store
+    ).order_by(
+        'name',
+        'number'
+    )
+
+
+    # ==========================================
+    # TODAY
+    # ==========================================
+
+    today = timezone.localdate()
+
+
+    # ==========================================
+    # READING ENTRIES
+    #
+    # IMPORTANT:
+    # Staff should see ONLY their own
+    # reading entries.
+    # ==========================================
+
+    reading_entries = ReadingData.objects.filter(
+        entry_source='staff_entry',
+        staff=user
+    )
+
+
+    # ==========================================
+    # CUSTOMER ENTRIES
+    #
+    # Staff should see ONLY their own
+    # customer entries.
+    # ==========================================
+
+    customer_entries = GameData.objects.filter(
+        entry_source='customer_staff_entry',
+        staff=user
+    )
+
+
+    # ==========================================
+    # TODAY'S COUNTS
+    # ==========================================
+
+    today_reading_count = reading_entries.filter(
+        date=today
+    ).count()
+
+
+    today_customer_count = customer_entries.filter(
+        date=today
+    ).count()
+
+
+    # ==========================================
+    # RECENT READING ENTRIES
+    # ==========================================
+
+    recent_reading_entries = (
+        reading_entries
+        .select_related(
+            'machine'
+        )
+        .order_by(
+            '-date',
+            '-time',
+            '-id'
+        )[:5]
+    )
+
+
+    # ==========================================
+    # RECENT CUSTOMER ENTRIES
+    # ==========================================
+
+    recent_customer_entries = (
+        customer_entries
+        .select_related(
+            'machine'
+        )
+        .order_by(
+            '-date',
+            '-time',
+            '-id'
+        )[:5]
+    )
+
+
+    # ==========================================
+    # CONTEXT
+    # ==========================================
+
+    context = {
+
+        'machines': machines,
+
+        'machines_count': machines.count(),
+
+        'today_reading_count':
+            today_reading_count,
+
+        'today_customer_count':
+            today_customer_count,
+
+        'recent_reading_entries':
+            recent_reading_entries,
+
+        'recent_customer_entries':
+            recent_customer_entries,
+
+    }
+
+
+    # ==========================================
+    # DASHBOARD
+    # ==========================================
+
+    return render(
+        request,
+        'staff_dashboard.html',
+        context
+    )

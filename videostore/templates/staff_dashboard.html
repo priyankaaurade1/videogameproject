@@ -1,0 +1,1694 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block page_title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+
+    /* =========================================================
+       STAFF DASHBOARD
+    ========================================================= */
+
+    .staff-dashboard {
+        width: 100%;
+        max-width: 1450px;
+        margin: 0 auto;
+        padding: 5px 5px 30px;
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        gap: 15px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .dashboard-title-area {
+        display: flex;
+        align-items: center;
+
+        gap: 12px;
+    }
+
+
+    .dashboard-icon {
+        width: 48px;
+        height: 48px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: linear-gradient(
+            135deg,
+            #00bcd4,
+            #7040d9
+        );
+
+        color: white;
+
+        font-size: 22px;
+
+        flex-shrink: 0;
+
+        box-shadow:
+            0 5px 15px rgba(0, 188, 212, 0.20);
+    }
+
+
+    .dashboard-title {
+
+        margin: 0;
+
+        color: #151b2e;
+
+        font-size: 24px;
+
+        font-weight: 700;
+    }
+
+
+    .dashboard-subtitle {
+
+        margin: 3px 0 0;
+
+        color: #7b8497;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       STORE BADGE
+    ========================================================= */
+
+    .store-badge {
+
+        display: flex;
+        align-items: center;
+
+        gap: 7px;
+
+        padding: 9px 13px;
+
+        background: #ffffff;
+
+        border: 1px solid #e0e5ed;
+
+        border-radius: 8px;
+
+        color: #394258;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        box-shadow:
+            0 3px 12px rgba(20, 30, 50, 0.05);
+    }
+
+
+    .store-badge i {
+
+        color: #00a8c7;
+
+        font-size: 16px;
+    }
+
+
+    /* =========================================================
+       QUICK ACTIONS
+    ========================================================= */
+
+    .section-title {
+
+        margin-bottom: 10px;
+
+        color: #30374a;
+
+        font-size: 15px;
+
+        font-weight: 700;
+    }
+
+
+    .quick-actions {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .quick-action {
+
+        display: flex;
+        align-items: center;
+
+        gap: 12px;
+
+        min-height: 75px;
+
+        padding: 13px 15px;
+
+        background: #ffffff;
+
+        border: 1px solid #e2e6ed;
+
+        border-radius: 10px;
+
+        color: #30374a;
+
+        text-decoration: none;
+
+        box-shadow:
+            0 4px 15px rgba(20, 30, 50, 0.05);
+
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+    }
+
+
+    .quick-action:hover {
+
+        color: #30374a;
+
+        text-decoration: none;
+
+        transform: translateY(-2px);
+
+        border-color: #00bcd4;
+
+        box-shadow:
+            0 7px 20px rgba(20, 30, 50, 0.09);
+    }
+
+
+    .quick-action-icon {
+
+        width: 44px;
+        height: 44px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: #eefaff;
+
+        color: #009db8;
+
+        font-size: 20px;
+
+        flex-shrink: 0;
+    }
+
+
+    .quick-action.customer
+    .quick-action-icon {
+
+        background: #f3efff;
+
+        color: #7040d9;
+    }
+
+
+    .quick-action-title {
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        margin-bottom: 2px;
+    }
+
+
+    .quick-action-description {
+
+        color: #858da0;
+
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       STAT CARDS
+    ========================================================= */
+
+    .stats-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 12px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .stat-card {
+
+        position: relative;
+
+        overflow: hidden;
+
+        padding: 16px;
+
+        background: #ffffff;
+
+        border: 1px solid #e2e6ed;
+
+        border-radius: 10px;
+
+        box-shadow:
+            0 4px 15px rgba(20, 30, 50, 0.05);
+    }
+
+
+    .stat-card::after {
+
+        content: "";
+
+        position: absolute;
+
+        right: -20px;
+
+        top: -25px;
+
+        width: 70px;
+
+        height: 70px;
+
+        border-radius: 50%;
+
+        background: rgba(0, 188, 212, 0.06);
+    }
+
+
+    .stat-icon {
+
+        width: 36px;
+        height: 36px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 8px;
+
+        background: #eefaff;
+
+        color: #009db8;
+
+        font-size: 16px;
+
+        margin-bottom: 10px;
+    }
+
+
+    .stat-card:nth-child(2)
+    .stat-icon {
+
+        background: #f3efff;
+
+        color: #7040d9;
+    }
+
+
+    .stat-card:nth-child(3)
+    .stat-icon {
+
+        background: #eefaf3;
+
+        color: #198754;
+    }
+
+
+    .stat-card:nth-child(4)
+    .stat-icon {
+
+        background: #fff7e8;
+
+        color: #d28a00;
+    }
+
+
+    .stat-label {
+
+        color: #7b8497;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        margin-bottom: 3px;
+    }
+
+
+    .stat-number {
+
+        color: #20263a;
+
+        font-size: 24px;
+
+        font-weight: 700;
+
+        line-height: 1.1;
+    }
+
+
+    .stat-small {
+
+        margin-top: 4px;
+
+        color: #9aa1b0;
+
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       CONTENT GRID
+    ========================================================= */
+
+    .dashboard-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            1.4fr 1fr;
+
+        gap: 15px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .dashboard-card {
+
+        background: #ffffff;
+
+        border: 1px solid #e2e6ed;
+
+        border-radius: 10px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 4px 15px rgba(20, 30, 50, 0.05);
+    }
+
+
+    .dashboard-card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        padding: 13px 15px;
+
+        border-bottom: 1px solid #e8ebf0;
+    }
+
+
+    .dashboard-card-title {
+
+        margin: 0;
+
+        color: #30374a;
+
+        font-size: 14px;
+
+        font-weight: 700;
+    }
+
+
+    .dashboard-card-title i {
+
+        margin-right: 6px;
+
+        color: #00a8c7;
+    }
+
+
+    .dashboard-card-body {
+
+        padding: 14px;
+    }
+
+
+    /* =========================================================
+       MACHINE LIST
+    ========================================================= */
+
+    .machine-list {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+
+    .machine-item {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        padding: 10px 11px;
+
+        background: #f8fafc;
+
+        border: 1px solid #e8ebf0;
+
+        border-radius: 7px;
+    }
+
+
+    .machine-left {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        min-width: 0;
+    }
+
+
+    .machine-icon {
+
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background: #eefaff;
+
+        color: #009db8;
+
+        flex-shrink: 0;
+    }
+
+
+    .machine-name {
+
+        color: #30374a;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+
+    .machine-number {
+
+        margin-top: 2px;
+
+        color: #8a92a3;
+
+        font-size: 10px;
+    }
+
+
+    .machine-status {
+
+        padding: 4px 7px;
+
+        background: #eaf8f0;
+
+        border-radius: 5px;
+
+        color: #198754;
+
+        font-size: 9px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       RECENT ENTRIES
+    ========================================================= */
+
+    .entry-list {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+
+    .entry-item {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        padding: 9px 10px;
+
+        background: #f8fafc;
+
+        border: 1px solid #e8ebf0;
+
+        border-radius: 7px;
+    }
+
+
+    .entry-main {
+
+        min-width: 0;
+    }
+
+
+    .entry-title {
+
+        color: #30374a;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    .entry-info {
+
+        margin-top: 2px;
+
+        color: #8a92a3;
+
+        font-size: 10px;
+    }
+
+
+    .entry-number {
+
+        color: #7040d9;
+
+        font-size: 11px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    .empty-state {
+
+        padding: 22px 10px;
+
+        text-align: center;
+
+        color: #9098a8;
+    }
+
+
+    .empty-state i {
+
+        display: block;
+
+        margin-bottom: 6px;
+
+        font-size: 25px;
+
+        color: #c2c8d3;
+    }
+
+
+    .empty-state-text {
+
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       ACCESS INFORMATION
+    ========================================================= */
+
+    .access-card {
+
+        background:
+            linear-gradient(
+                135deg,
+                #11182e,
+                #20294a
+            );
+
+        border-radius: 10px;
+
+        padding: 16px;
+
+        color: #ffffff;
+
+        box-shadow:
+            0 6px 20px rgba(17, 24, 46, 0.15);
+    }
+
+
+    .access-title {
+
+        margin-bottom: 5px;
+
+        font-size: 14px;
+
+        font-weight: 700;
+    }
+
+
+    .access-description {
+
+        margin-bottom: 12px;
+
+        color: #b9c1d4;
+
+        font-size: 11px;
+
+        line-height: 1.5;
+    }
+
+
+    .access-items {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 7px;
+    }
+
+
+    .access-item {
+
+        padding: 5px 8px;
+
+        border: 1px solid rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+        border-radius: 5px;
+
+        background: rgba(
+            255,
+            255,
+            255,
+            0.05
+        );
+
+        color: #e7ebf4;
+
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 991.98px) {
+
+        .stats-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+
+        .dashboard-grid {
+
+            grid-template-columns:
+                1fr;
+        }
+
+    }
+
+
+    @media (max-width: 767.98px) {
+
+        .staff-dashboard {
+
+            padding: 2px 2px 20px;
+        }
+
+
+        .dashboard-header {
+
+            align-items: flex-start;
+
+            margin-bottom: 14px;
+        }
+
+
+        .dashboard-icon {
+
+            width: 40px;
+            height: 40px;
+
+            font-size: 18px;
+        }
+
+
+        .dashboard-title {
+
+            font-size: 19px;
+        }
+
+
+        .dashboard-subtitle {
+
+            font-size: 10px;
+        }
+
+
+        .store-badge {
+
+            padding: 7px 9px;
+
+            font-size: 10px;
+        }
+
+
+        .store-badge i {
+
+            font-size: 13px;
+        }
+
+
+        .quick-actions {
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 8px;
+        }
+
+
+        .quick-action {
+
+            min-height: 68px;
+
+            padding: 10px;
+
+            gap: 8px;
+        }
+
+
+        .quick-action-icon {
+
+            width: 35px;
+            height: 35px;
+
+            font-size: 16px;
+        }
+
+
+        .quick-action-title {
+
+            font-size: 11px;
+        }
+
+
+        .quick-action-description {
+
+            display: none;
+        }
+
+
+        .stats-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 8px;
+        }
+
+
+        .stat-card {
+
+            padding: 11px;
+        }
+
+
+        .stat-icon {
+
+            width: 31px;
+            height: 31px;
+
+            margin-bottom: 7px;
+        }
+
+
+        .stat-number {
+
+            font-size: 20px;
+        }
+
+
+        .stat-label {
+
+            font-size: 10px;
+        }
+
+
+        .stat-small {
+
+            font-size: 9px;
+        }
+
+
+        .dashboard-card-header {
+
+            padding: 11px 12px;
+        }
+
+
+        .dashboard-card-body {
+
+            padding: 11px;
+        }
+
+
+        .dashboard-card-title {
+
+            font-size: 12px;
+        }
+
+
+        .machine-item,
+        .entry-item {
+
+            padding: 8px;
+        }
+
+
+        .access-card {
+
+            padding: 13px;
+        }
+
+    }
+
+
+    @media (max-width: 380px) {
+
+        .dashboard-header {
+
+            display: block;
+        }
+
+
+        .store-badge {
+
+            display: inline-flex;
+
+            margin-top: 8px;
+        }
+
+
+        .dashboard-title {
+
+            font-size: 18px;
+        }
+
+
+        .quick-action {
+
+            padding: 8px;
+        }
+
+
+        .quick-action-icon {
+
+            width: 31px;
+            height: 31px;
+        }
+
+
+        .quick-action-title {
+
+            font-size: 10px;
+        }
+
+    }
+
+</style>
+<style>
+    .stat-card::after {
+    pointer-events: none;
+}
+
+.stat-label a {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    cursor: pointer;
+    pointer-events: auto;
+}
+</style>
+
+
+<div class="staff-dashboard">
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <div class="dashboard-header">
+
+
+        <div class="dashboard-title-area">
+
+
+            <div class="dashboard-icon">
+
+                <i class="bi bi-controller"></i>
+
+            </div>
+
+
+            <div>
+
+                <h1 class="dashboard-title">
+                    Staff Dashboard
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    Welcome, {{ request.user.username }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- STORE -->
+
+        <div class="store-badge">
+
+            <i class="bi bi-shop"></i>
+
+            <span>
+
+                {% if request.user.store %}
+
+                    {{ request.user.store.name }}
+
+                {% else %}
+
+                    No Store Assigned
+
+                {% endif %}
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         QUICK ACTIONS
+    ===================================================== -->
+
+    <div class="section-title">
+
+        Quick Actions
+
+    </div>
+
+
+    <div class="quick-actions">
+
+
+        <!-- READING ENTRY -->
+
+        <a
+            href="{% url 'staff_entry' %}"
+            class="quick-action"
+        >
+
+            <div class="quick-action-icon">
+
+                <i class="bi bi-pencil-square"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="quick-action-title">
+                    Reading Entry
+                </div>
+
+                <div class="quick-action-description">
+                    Add machine readings
+                </div>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- CUSTOMER ENTRY -->
+
+        <a
+            href="{% url 'customer_staff_entry' %}"
+            class="quick-action customer"
+        >
+
+            <div class="quick-action-icon">
+
+                <i class="bi bi-person-plus"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="quick-action-title">
+                    Customer Entry
+                </div>
+
+                <div class="quick-action-description">
+                    Add customer data
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         STAT CARDS
+         
+         These variables can come from the dashboard view.
+         Defaults keep the page safe if a value is not passed.
+    ===================================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- MACHINES -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-controller"></i>
+
+            </div>
+
+
+            <div class="stat-label">
+                My Machines
+            </div>
+
+
+            <div class="stat-number">
+                {{ machines_count|default:"0" }}
+            </div>
+
+
+            <div class="stat-small">
+                Assigned to your store
+            </div>
+
+        </div>
+
+
+
+        <!-- READING ENTRIES -->
+
+        <div class="stat-card">
+            <a href="{% url 'staff_entries' %}" style="color: inherit; text-decoration: none;">
+            <div class="stat-icon">
+
+                <i class="bi bi-journal-text"></i>
+
+            </div>
+
+
+            <div class="stat-label">
+               
+                    Today's Reading
+              
+            </div>
+
+
+            <div class="stat-number">
+                {{ today_reading_count|default:"0" }}
+            </div>
+
+
+            <div class="stat-small">
+                Machine entries
+            </div>
+            </a>
+        </div>
+
+
+
+        <!-- CUSTOMER ENTRIES -->
+
+        <div class="stat-card">
+            <a href="{% url 'customer_entries' %}" style="color: inherit; text-decoration: none;">
+            <div class="stat-icon">
+
+                <i class="bi bi-people"></i>
+
+            </div>
+
+
+            <div class="stat-label">
+                
+                    Today's Customers
+            </div>
+
+
+            <div class="stat-number">
+                {{ today_customer_count|default:"0" }}
+            </div>
+
+
+            <div class="stat-small">
+                Customer entries
+            </div>
+            </a>
+        </div>
+
+
+
+        <!-- STAFF -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-person-badge"></i>
+
+            </div>
+
+
+            <div class="stat-label">
+                Staff
+            </div>
+
+
+            <div class="stat-number">
+                {{ request.user.username }}
+            </div>
+
+
+            <div class="stat-small">
+                Currently logged in
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN DASHBOARD
+    ===================================================== -->
+
+    <div class="dashboard-grid">
+
+
+        <!-- =================================================
+             MACHINES
+        ================================================= -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-header">
+
+                <h3 class="dashboard-card-title">
+
+                    <i class="bi bi-controller"></i>
+
+                    My Machines
+
+                </h3>
+
+            </div>
+
+
+            <div class="dashboard-card-body">
+
+
+                {% if machines %}
+
+
+                    <div class="machine-list">
+
+
+                        {% for machine in machines %}
+
+                        <div class="machine-item">
+
+
+                            <div class="machine-left">
+
+
+                                <div class="machine-icon">
+
+                                    <i class="bi bi-display"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <div class="machine-name">
+
+                                        {{ machine.name }}
+
+                                    </div>
+
+
+                                    <div class="machine-number">
+
+                                        Machine No:
+                                        {{ machine.number }}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="machine-status">
+
+                                ACTIVE
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <div class="empty-state">
+
+                        <i class="bi bi-controller"></i>
+
+                        <div class="empty-state-text">
+
+                            No machines assigned to your store.
+
+                        </div>
+
+                    </div>
+
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             RECENT READING ENTRIES
+        ================================================= -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-header">
+
+                <h3 class="dashboard-card-title">
+
+                    <i class="bi bi-clock-history"></i>
+
+                    Recent Readings
+
+                </h3>
+
+
+                <a
+                    href="{% url 'staff_entries' %}"
+                    class="btn btn-sm btn-outline-primary"
+                    style="font-size:10px;"
+                >
+
+                    View All
+
+                </a>
+
+            </div>
+
+
+            <div class="dashboard-card-body">
+
+
+                {% if recent_reading_entries %}
+
+
+                    <div class="entry-list">
+
+
+                        {% for entry in recent_reading_entries %}
+
+                        <div class="entry-item">
+
+
+                            <div class="entry-main">
+
+
+                                <div class="entry-title">
+
+                                    {% if entry.machine %}
+
+                                        {{ entry.machine.name }}
+
+                                    {% else %}
+
+                                        Machine
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="entry-info">
+
+                                    {{ entry.date }}
+                                    ·
+                                    {{ entry.time|time:"H:i" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="entry-number">
+
+                                #{{ entry.reading_no }}
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <div class="empty-state">
+
+                        <i class="bi bi-journal-text"></i>
+
+                        <div class="empty-state-text">
+
+                            No recent reading entries.
+
+                        </div>
+
+                    </div>
+
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         CUSTOMER ENTRIES
+    ===================================================== -->
+<!-- 
+    <div class="dashboard-card mb-3">
+
+
+        <div class="dashboard-card-header">
+
+            <h3 class="dashboard-card-title">
+
+                <i class="bi bi-people"></i>
+
+                Recent Customer Entries
+
+            </h3>
+
+
+            <a
+                href="{% url 'customer_entries' %}"
+                class="btn btn-sm btn-outline-primary"
+                style="font-size:10px;"
+            >
+
+                View All
+
+            </a>
+
+        </div>
+
+
+        <div class="dashboard-card-body">
+
+
+            {% if recent_customer_entries %}
+
+
+                <div class="entry-list">
+
+
+                    {% for entry in recent_customer_entries %}
+
+                    <div class="entry-item">
+
+
+                        <div class="entry-main">
+
+
+                            <div class="entry-title">
+
+                                {{ entry.customer_name }}
+
+                            </div>
+
+
+                            <div class="entry-info">
+
+                                {% if entry.machine %}
+
+                                    {{ entry.machine.name }}
+
+                                {% endif %}
+
+                                {% if entry.bill_no %}
+
+                                    · Bill {{ entry.bill_no }}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="entry-number">
+
+                            {{ entry.in_points }}
+                            /
+                            {{ entry.out_points }}
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="empty-state">
+
+                    <i class="bi bi-people"></i>
+
+                    <div class="empty-state-text">
+
+                        No recent customer entries.
+
+                    </div>
+
+                </div>
+
+
+            {% endif %}
+
+        </div>
+
+    </div> -->
+
+
+
+    <!-- =====================================================
+         STAFF ACCESS
+    ===================================================== -->
+
+    <!-- <div class="access-card">
+
+
+        <div class="access-title">
+
+            <i class="bi bi-shield-check me-1"></i>
+
+            Staff Access
+
+        </div>
+
+
+        <div class="access-description">
+
+            Your account is limited to the machines and records
+            associated with your assigned store.
+
+        </div>
+
+
+        <div class="access-items">
+
+
+            <span class="access-item">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                Reading Entry
+
+            </span>
+
+
+            <span class="access-item">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                Customer Entry
+
+            </span>
+
+
+            <span class="access-item">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                View Entries
+
+            </span>
+
+
+            <span class="access-item">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                Edit Entries
+
+            </span>
+
+
+            <span class="access-item">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                Delete Entries
+
+            </span>
+
+
+        </div>
+
+    </div> -->
+
+</div>
+
+{% endblock %}
