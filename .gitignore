@@ -1,0 +1,16 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+videogame/local_settings.py
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
